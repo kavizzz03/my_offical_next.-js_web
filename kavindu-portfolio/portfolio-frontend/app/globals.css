@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --color-midnight: #020617;
+  --color-cyan-glow: rgba(6, 182, 212, 0.15);
+}
+
+:root {
+  --background: #020617;
+  --foreground: #f8fafc;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "ss01" 1, "ss03" 1;
+  overflow-x: hidden;
+}
+
+/* 
+   ELITE GLASS EFFECT 
+   Fixed for Tailwind v4/v16 engine 
+*/
+.glass-card {
+  background-color: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(6, 182, 212, 0.3);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Technical Grain Overlay */
+.bg-grain {
+  background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+  opacity: 0.2;
+  filter: brightness(0.5);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
