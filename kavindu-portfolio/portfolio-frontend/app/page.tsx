@@ -8,12 +8,20 @@ import {
   Terminal, Zap, Workflow, ShieldCheck
 } from 'lucide-react';
 
+interface Project {
+  name: string;
+  description: string;
+  imageUrl?: string;
+  tags?: string[];
+  link?: string;
+}
+
 export default function Portfolio() {
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/projects')
+    fetch('https://my-offical-next-js-web-1.onrender.com')
       .then(res => res.json())
       .then(data => {
         setProjects(data);
