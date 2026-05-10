@@ -53,6 +53,9 @@ export const metadata: Metadata = {
 
   authors: [{ name: "Kavindu Bogahawatte", url: "https://linkedin.com/in/kavindu-bogahawatte-7b3810320" }],
   creator: "Kavindu Bogahawatte",
+   verification: {
+    google: "-ans5D5iRGn-Be9GXXWuc68YTLlE41cmcuMyJhqvFjg",
+  },
 
   openGraph: {
     type: "website",
