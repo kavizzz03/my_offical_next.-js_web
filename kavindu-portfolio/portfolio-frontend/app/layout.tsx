@@ -9,58 +9,68 @@ const geistSans = Geist({
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono-tech", // Renamed for SEO distinction
+  variable: "--font-geist-mono-tech",
   subsets: ["latin"],
 });
 
-// --- ADVANCED SEO CONFIGURATION ---
+// --- ELITE SEO & GLOBAL BRANDING ---
 export const metadata: Metadata = {
-  metadataBase: new URL('https://kavindu-bogahawatte.vercel.app'),
-  // Title appears in browser tabs and Google Search Results
-  title: {
-    default: "Kavindu Bogahawatte | Software Engineer & Backend Architect",
-    template: "%s | Kavindu Bogahawatte"
-  },
-  description: "Official Portfolio of Kavindu Bogahawatte. BSc (Hons) Software Engineering Undergrad at University of Bedfordshire & SLIIT. Expert in Node.js, Android Kotlin, and Fullstack Architecture.",
+  // Sets the base URL for absolute links (like OG images)
+  metadataBase: new URL('https://my-offical-next-js-web-jwe4.vercel.app/'),
   
-  // High-value keywords for search ranking
+  title: {
+    default: "Kavindu Bogahawatte | Backend Engineer & System Architect",
+    template: "%s | Kavindu Malshan Nethvitha"
+  },
+  description: "Official Portfolio of Kavindu Malshan Bogahawatte. Backend Engineer & Mobile Specialist based in Colombo. Expert in Node.js, Kotlin, and System Architecture. Alumnus of Mahanama College & SLIIT.",
+  
   keywords: [
+    // Identity Search (Broad & Specific)
     "Kavindu Bogahawatte", 
-    "Software Engineer Sri Lanka", 
-    "Backend Developer Colombo", 
-    "Android Developer Sri Lanka", 
-    "SLIIT Software Engineering", 
-    "University of Bedfordshire Student Portfolio",
-    "React Next.js Developer",
-    "Kotlin Mobile Expert"
+    "Kavindu Malshan", 
+    "Kavindu Nethvitha",
+    "Kavindu Bogahawatte Software Engineer",
+    // Education & Institutional SEO (Local Trust)
+    "Mahanama College Software Engineer",
+    "SLIIT Software Engineering Student", 
+    "SCU Australia Computer Science Sri Lanka",
+    "University of Bedfordshire Computing",
+    // Localized Professional Keywords
+    "Best Backend Developer Sri Lanka", 
+    "Software Engineering Services Colombo", 
+    "Freelance Android Developer Sri Lanka",
+    "Fullstack Engineer Colombo",
+    // Niche Technical Keywords (Backend Focus)
+    "Scalable API Architect Node.js",
+    "Kotlin Mobile Expert Sri Lanka",
+    "WhatsApp Business API Specialist",
+    "Enterprise System Architect Sri Lanka"
   ],
 
-  // Verification for Search Engines
   alternates: {
-    canonical: "https://kavindu-bogahawatte.vercel.app/",
+    canonical: "/",
   },
 
-  // Author details for LinkedIn/Google snippets
-  authors: [{ name: "Kavindu Bogahawatte", url: "https://linkedin.com/in/kavindu-bogahawatte" }],
+  authors: [{ name: "Kavindu Bogahawatte", url: "https://linkedin.com/in/kavindu-bogahawatte-7b3810320" }],
   creator: "Kavindu Bogahawatte",
 
-  // OpenGraph (How your link looks on WhatsApp/Facebook/LinkedIn)
   openGraph: {
     type: "website",
     locale: "en_LK",
-    url: "https://kavindu-bogahawatte.vercel.app/",
-    title: "Kavindu Bogahawatte | Fullstack Architect",
-    description: "Building scalable backend systems and high-performance mobile applications.",
+    url: "https://my-offical-next-js-web-jwe4.vercelapp/",
+    title: "Kavindu Bogahawatte | Backend Architect & Mobile Specialist",
+    description: "Developing robust backend systems and high-performance mobile applications with a focus on logic and stability.",
     siteName: "Kavindu Bogahawatte Professional Portfolio",
+    // --- OG IMAGE CONFIGURATION ---
     images: [{
-      url: "/og-image.png", // Ensure you add a social preview image in your public folder
+      url: "og-image.png", // Now standardized to use metadataBase
       width: 1200,
       height: 630,
-      alt: "Kavindu Bogahawatte Portfolio"
+      alt: "Kavindu Bogahawatte - Professional Software Engineering Portfolio Preview"
     }],
   },
 
-  // --- BRANDED ICON CONFIGURATION (Removes Next.js Icon) ---
+  // --- RELEVANT BRANDED ICONS ---
   icons: {
     icon: [
       { url: "https://cdn-icons-png.flaticon.com/512/8759/8759045.png", sizes: "32x32", type: "image/png" },
@@ -69,9 +79,7 @@ export const metadata: Metadata = {
     apple: [
       { url: "https://cdn-icons-png.flaticon.com/512/8759/8759045.png", sizes: "180x180", type: "image/png" },
     ],
-    shortcut: ["https://cdn-icons-png.flaticon.com/512/8759/8759045.png"],
   },
-
 }
 
 export const viewport = {
@@ -83,31 +91,50 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // JSON-LD for Search Engines to understand your "Person" entity
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Kavindu Bogahawatte",
+    "alternateName": ["Kavindu Malshan", "Kavindu Nethvitha"],
+    "url": "https://my-offical-next-js-web-jwe4.vercelapp/",
+    "jobTitle": "Backend Engineer & System Architect",
+    "alumniOf": [
+      { "@type": "EducationalOrganization", "name": "SLIIT" },
+      { "@type": "EducationalOrganization", "name": "Mahanama College" }
+    ],
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Colombo",
+      "addressCountry": "LK"
+    }
+  };
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}
     >
-      {/* 
-        Note: The <head> is automatically handled by Next.js Metadata API 
-        which replaces the default favicon.ico with the icons listed above.
-      */}
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-[#020617] text-slate-200 selection:bg-cyan-500/30 selection:text-black">
-        
-        {/* Main Content */}
-        <div className="flex-grow">
+        <main className="flex-grow">
           {children}
-        </div>
+        </main>
 
         {/* --- GLOBAL ONLINE SUPPORT WIDGET --- */}
         <div className="fixed bottom-8 right-8 z-[9999] flex flex-col items-end gap-4">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-2xl shadow-2xl animate-bounce mb-2">
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 px-4 py-2 rounded-2xl shadow-2xl animate-pulse mb-2">
             <p className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
-              Support Online
+              Engineer Active
             </p>
           </div>
 
@@ -115,11 +142,11 @@ export default function RootLayout({
             href="https://wa.me/94740890730" 
             target="_blank"
             rel="noopener noreferrer"
-            className="group relative flex items-center justify-center w-16 h-16 bg-cyan-500 rounded-full text-black shadow-[0_0_30px_rgba(6,182,212,0.4)] hover:scale-110 transition-all duration-300"
+            className="group relative flex items-center justify-center w-16 h-16 bg-cyan-500 rounded-full text-black shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:scale-110 active:scale-95 transition-all duration-300"
           >
             <Headset size={28} />
-            <span className="absolute right-20 bg-black text-white text-[10px] font-bold py-2 px-4 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10 uppercase tracking-widest">
-              Live Chat
+            <span className="absolute right-20 bg-slate-900 text-white text-[10px] font-bold py-2 px-4 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10 uppercase tracking-tighter">
+              Instant Connect
             </span>
           </a>
         </div>
