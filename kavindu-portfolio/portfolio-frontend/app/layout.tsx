@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 
 // --- ADVANCED SEO CONFIGURATION ---
 export const metadata: Metadata = {
+  metadataBase: new URL('https://kavindu-bogahawatte.vercel.app'),
   // Title appears in browser tabs and Google Search Results
   title: {
     default: "Kavindu Bogahawatte | Software Engineer & Backend Architect",
@@ -71,7 +72,9 @@ export const metadata: Metadata = {
     shortcut: ["https://cdn-icons-png.flaticon.com/512/8759/8759045.png"],
   },
 
-  // Mobile Browser Theme
+}
+
+export const viewport = {
   themeColor: "#020617",
 };
 

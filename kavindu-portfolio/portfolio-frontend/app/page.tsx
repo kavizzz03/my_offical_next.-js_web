@@ -21,7 +21,7 @@ export default function Portfolio() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('https://my-offical-next-js-web-1.onrender.com')
+    fetch('https://my-offical-next-js-web-1.onrender.com/api/projects')
       .then(res => res.json())
       .then(data => {
         setProjects(data);
