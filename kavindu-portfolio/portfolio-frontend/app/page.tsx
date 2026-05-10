@@ -301,12 +301,12 @@ export default function Portfolio() {
                 <h3 className="text-lg md:text-xl font-black italic text-white uppercase mt-1">Mahanama College Colombo</h3>
                 <p className="text-slate-400 text-xs md:text-sm uppercase">Secondary Education</p>
               </div>
-          <div className="relative opacity-70">
-  <div className="absolute -left-[41px] top-1 w-5 h-5 rounded-full bg-slate-900 border-4 border-[#020617]" />
-  <span className="text-[10px] font-mono text-slate-600 font-bold tracking-widest">[2009 - 2014]</span>
-  <h3 className="text-lg md:text-xl font-black italic text-white uppercase mt-1">Roman Catholic Junior School Hanwella</h3>
-  <p className="text-slate-400 text-xs md:text-sm uppercase">Primary Education</p>
-</div>
+              <div className="relative">
+                <div className="absolute -left-[41px] top-1 w-5 h-5 rounded-full bg-slate-800 border-4 border-[#020617]" />
+                <span className="text-[10px] font-mono text-slate-500 font-bold tracking-widest">[2009 - 2014]</span>
+                <h3 className="text-lg md:text-xl font-black italic text-white uppercase mt-1">Roman Catholic Junior School Hanwella</h3>
+                <p className="text-slate-400 text-xs md:text-sm uppercase">Primary Education</p>
+              </div>
             </div>
           </div>
 
