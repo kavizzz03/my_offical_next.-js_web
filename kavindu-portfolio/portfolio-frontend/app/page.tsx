@@ -8,34 +8,69 @@ import {
   Box, Terminal, Zap, Workflow, ShieldCheck
 } from 'lucide-react';
 
+function ImageWithFallback({ src, alt, className, fallback = '/og-image.png', ...rest }: { src: string; alt: string; className?: string; fallback?: string } & React.ImgHTMLAttributes<HTMLImageElement>) {
+  const [imgSrc, setImgSrc] = useState(src || fallback);
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={imgSrc}
+      alt={alt}
+      className={className}
+      onError={() => { if (imgSrc !== fallback) setImgSrc(fallback); }}
+      {...rest}
+    />
+  );
+}
+
 interface Project {
   name: string;
   description: string;
   imageUrl?: string;
+  images?: string[];
   tags?: string[];
   link?: string;
   repo?: string;
   live?: string;
   category?: string;
+  role?: string;
+  year?: string;
+  status?: string;
+  client?: string;
+  overview?: string;
+  highlights?: string[];
 }
 
-export default function Portfolio() {
-  function ImageWithFallback({ src, alt, className, fallback = '/og-image.png', ...rest }: { src: string; alt: string; className?: string; fallback?: string }) {
-    const [imgSrc, setImgSrc] = useState(src || fallback);
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={imgSrc}
-        alt={alt}
-        className={className}
-        onError={() => { if (imgSrc !== fallback) setImgSrc(fallback); }}
-        {...rest}
-      />
-    );
-  }
+type ProjectApi = {
+  title?: string;
+  name?: string;
+  description?: string;
+  image?: string;
+  imageUrl?: string;
+  images?: string[];
+  gallery?: string[];
+  tags?: string[];
+  githubUrl?: string;
+  repo?: string;
+  liveUrl?: string;
+  live?: string;
+  category?: string;
+  link?: string;
+  role?: string;
+  year?: string;
+  status?: string;
+  client?: string;
+  company?: string;
+  overview?: string;
+  highlights?: string[];
+  createdAt?: string;
+};
 
+export default function Portfolio() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     const apiUrls = [
@@ -57,15 +92,22 @@ export default function Portfolio() {
 
           // UPDATED LOGIC: Map all projects without strict backend-only exclusion
           // This ensures "Brainana", "ASB Digital Hub", and others show up.
-          const mapped: Project[] = (Array.isArray(raw) ? raw : []).map((p: any) => ({
+          const mapped: Project[] = (Array.isArray(raw) ? raw : []).map((p: ProjectApi) => ({
             name: p.title || p.name || 'Untitled Project',
             description: p.description || 'System architecture and implementation details.',
             imageUrl: p.image || p.imageUrl || '/og-image.png',
+            images: Array.isArray(p.images) ? p.images : Array.isArray(p.gallery) ? p.gallery : [],
             tags: Array.isArray(p.tags) ? p.tags : [],
             repo: p.githubUrl || p.repo || '',
             live: p.liveUrl || p.live || '',
             category: p.category || 'Engineering',
             link: p.githubUrl || p.liveUrl || p.link || '#',
+            role: p.role || 'Full-stack delivery',
+            year: p.year || new Date(p.createdAt || Date.now()).getFullYear().toString(),
+            status: p.status || (p.liveUrl && p.liveUrl !== '#' ? 'Live' : 'Concept'),
+            client: p.client || p.company || 'Private project',
+            overview: p.overview || p.description || '',
+            highlights: Array.isArray(p.highlights) ? p.highlights : [],
           }));
 
           setProjects(mapped);
@@ -88,6 +130,22 @@ export default function Portfolio() {
     { label: 'Instagram', href: 'https://www.instagram.com/kaviz.z_?igsh=MWI5OGpsOGF2a3RzcA==', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg> },
     { label: 'Facebook', href: 'https://www.facebook.com/kavindu.malshan.739', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg> }
   ];
+
+  const openProject = (project: Project) => {
+    setSelectedProject(project);
+    setSelectedImageIndex(0);
+  };
+
+  const closeProject = () => {
+    setSelectedProject(null);
+    setSelectedImageIndex(0);
+  };
+
+  const activeProjectImages = selectedProject
+    ? [selectedProject.imageUrl || '/og-image.png', ...(selectedProject.images || [])].filter((image, index, images) => Boolean(image) && images.indexOf(image) === index)
+    : [];
+
+  const activeImage = activeProjectImages[selectedImageIndex] || selectedProject?.imageUrl || '/og-image.png';
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 selection:bg-cyan-500/30 font-sans overflow-x-hidden">
@@ -181,7 +239,7 @@ export default function Portfolio() {
             </div>
             <div className="flex flex-col justify-center">
               <blockquote className="text-lg md:text-2xl font-light italic text-slate-300 border-l-4 border-cyan-500 pl-6 md:pl-8">
-                "I don't just write code; I engineer scalable foundations that thrive under the pressure of real-world demand."
+                I don&apos;t just write code; I engineer scalable foundations that thrive under the pressure of real-world demand.
               </blockquote>
             </div>
           </div>
@@ -246,11 +304,15 @@ export default function Portfolio() {
                   <motion.article
                     whileHover={{ y: -8 }}
                     key={`${proj.name}-${idx}`}
-                    className="group relative bg-slate-900/50 border border-white/10 rounded-3xl overflow-hidden shadow-lg"
+                    onClick={() => openProject(proj)}
+                    className="group relative bg-slate-900/50 border border-white/10 rounded-3xl overflow-hidden shadow-lg cursor-pointer"
                   >
                     <div className="aspect-video bg-slate-800 relative overflow-hidden">
                       <ImageWithFallback src={proj.imageUrl || '/og-image.png'} alt={proj.name} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500" />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/20 to-transparent opacity-85" />
+                      <div className="absolute top-4 left-4 flex items-center gap-2">
+                        <span className="text-[9px] font-mono text-white/90 bg-black/40 backdrop-blur-md border border-white/10 px-2 py-1 rounded-full uppercase">Open details</span>
+                      </div>
                     </div>
                     <div className="p-5 md:p-6">
                       <div className="flex justify-between items-start mb-2">
@@ -258,6 +320,11 @@ export default function Portfolio() {
                          <span className="text-[9px] font-mono text-slate-500 border border-white/10 px-2 py-0.5 rounded-full uppercase">{proj.category}</span>
                       </div>
                       <p className="text-slate-400 text-sm mb-4 line-clamp-3">{proj.description}</p>
+                      <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-4">
+                        <span>{proj.year}</span>
+                        <span className="w-1 h-1 rounded-full bg-slate-600" />
+                        <span>{proj.status}</span>
+                      </div>
                       <div className="flex flex-wrap gap-2 mb-5">
                         {proj.tags?.map(tag => (
                           <span key={tag} className="text-[10px] font-mono text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded-md">{tag}</span>
@@ -275,6 +342,146 @@ export default function Portfolio() {
             )}
           </div>
         </section>
+
+        {selectedProject && (
+          <div
+            className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-xl flex items-center justify-center px-4 py-8"
+            onClick={closeProject}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.25 }}
+              onClick={(event) => event.stopPropagation()}
+              className="w-full max-w-6xl max-h-[92vh] overflow-y-auto bg-[#081120] border border-white/10 rounded-[2rem] shadow-2xl"
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-5 md:px-8 py-4 border-b border-white/10 bg-[#081120]/90 backdrop-blur-xl">
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-[0.4em] text-cyan-400 mb-1">Project_Details</p>
+                  <h3 className="text-xl md:text-3xl font-black italic text-white uppercase">{selectedProject.name}</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeProject}
+                  className="shrink-0 w-11 h-11 rounded-full border border-white/10 bg-white/5 text-white hover:bg-cyan-500 hover:text-black transition-colors"
+                  aria-label="Close project details"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-0">
+                <div className="p-5 md:p-8 border-b lg:border-b-0 lg:border-r border-white/10">
+                  <div className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20">
+                    <div className="relative aspect-[16/10] bg-slate-900">
+                      <ImageWithFallback src={activeImage} alt={selectedProject.name} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#081120] via-transparent to-transparent" />
+                    </div>
+                    {activeProjectImages.length > 1 && (
+                      <div className="p-4 md:p-5 border-t border-white/10 bg-white/[0.02]">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500">Gallery</p>
+                          <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500">{selectedImageIndex + 1} / {activeProjectImages.length}</p>
+                        </div>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                          {activeProjectImages.map((image, imageIndex) => (
+                            <button
+                              key={`${image}-${imageIndex}`}
+                              type="button"
+                              onClick={() => setSelectedImageIndex(imageIndex)}
+                              className={`relative aspect-video overflow-hidden rounded-xl border transition-all ${selectedImageIndex === imageIndex ? 'border-cyan-400 ring-2 ring-cyan-400/30' : 'border-white/10 hover:border-cyan-400/40'}`}
+                            >
+                              <ImageWithFallback src={image} alt={`${selectedProject.name} gallery ${imageIndex + 1}`} className="w-full h-full object-cover" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+                      <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500 mb-2">Overview</p>
+                      <p className="text-sm md:text-base text-slate-300 leading-relaxed">{selectedProject.overview || selectedProject.description}</p>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+                      <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500 mb-2">Highlights</p>
+                      <div className="space-y-2">
+                        {(selectedProject.highlights && selectedProject.highlights.length > 0 ? selectedProject.highlights : [
+                          'Production-ready implementation tailored to the project domain.',
+                          'Performance-focused structure with maintainable architecture.',
+                          'Responsive UI with polished deployment presentation.'
+                        ]).map((highlight) => (
+                          <div key={highlight} className="flex items-start gap-2 text-sm text-slate-300">
+                            <span className="mt-2 w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />
+                            <span>{highlight}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-5 md:p-8 bg-white/[0.02]">
+                  <div className="space-y-6">
+                    <div>
+                      <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500 mb-2">Project Summary</p>
+                      <p className="text-sm md:text-base text-slate-300 leading-relaxed">{selectedProject.description}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-2xl border border-white/10 bg-[#0b1526] p-4">
+                        <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500 mb-1">Category</p>
+                        <p className="text-white font-bold uppercase italic text-sm">{selectedProject.category}</p>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-[#0b1526] p-4">
+                        <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500 mb-1">Status</p>
+                        <p className="text-white font-bold uppercase italic text-sm">{selectedProject.status}</p>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-[#0b1526] p-4">
+                        <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500 mb-1">Role</p>
+                        <p className="text-white font-bold uppercase italic text-sm">{selectedProject.role}</p>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-[#0b1526] p-4">
+                        <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500 mb-1">Year</p>
+                        <p className="text-white font-bold uppercase italic text-sm">{selectedProject.year}</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500 mb-3">Tech Stack</p>
+                      <div className="flex flex-wrap gap-2">
+                        {(selectedProject.tags || []).map((tag) => (
+                          <span key={tag} className="text-[10px] font-mono text-cyan-300 bg-cyan-400/10 border border-cyan-400/20 px-2.5 py-1.5 rounded-md uppercase tracking-[0.2em]">{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500 mb-3">Delivery Links</p>
+                      <div className="flex flex-wrap gap-3">
+                        {selectedProject.repo && selectedProject.repo !== '#' && (
+                          <a href={selectedProject.repo} target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-xs font-bold bg-white/5 border border-white/10 rounded-md hover:bg-cyan-500/10 transition-colors">Repo</a>
+                        )}
+                        {selectedProject.live && selectedProject.live !== '#' && (
+                          <a href={selectedProject.live} target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-xs font-bold bg-cyan-500 text-black rounded-md hover:bg-cyan-400 transition-colors">Live</a>
+                        )}
+                        {selectedProject.link && selectedProject.link !== '#' && selectedProject.link !== selectedProject.repo && selectedProject.link !== selectedProject.live && (
+                          <a href={selectedProject.link} target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-xs font-bold bg-white/10 rounded-md hover:bg-cyan-500/20 transition-colors">Open</a>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+                      <p className="text-[10px] font-mono uppercase tracking-[0.35em] text-slate-500 mb-2">Client / Context</p>
+                      <p className="text-sm text-slate-300">{selectedProject.client}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
 
         <section className="grid lg:grid-cols-2 gap-16 md:gap-20 mb-24 md:mb-48">
           <div>

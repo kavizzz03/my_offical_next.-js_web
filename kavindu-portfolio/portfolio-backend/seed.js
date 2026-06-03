@@ -11,6 +11,10 @@ const sampleData = [
         title: "ASB Fashion Digital Hub",
         description: "A high-performance management dashboard for ASB Fashions. Features glassmorphic UI, branch data synchronization, and a secure employee complaint portal.",
         image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000",
+        images: [
+            "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1000",
+            "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1000"
+        ],
         tags: ["Next.js", "PHP", "MySQL", "Tailwind CSS"],
         githubUrl: "#",
         liveUrl: "https://asbfashion.lk",
@@ -20,6 +24,10 @@ const sampleData = [
         title: "WhatsApp & SMS Manager Elite",
         description: "Backend communication engine integrating WhatsApp Business API and Hutch SMS Gateway. Designed for batch sending elite membership updates to 20,000+ users.",
         image: "https://images.unsplash.com/photo-1611746872915-64382b5c76da?q=80&w=1000",
+        images: [
+            "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1000",
+            "https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=1000"
+        ],
         tags: ["Node.js", "Express", "WhatsApp API", "SMS Gateway"],
         githubUrl: "#",
         liveUrl: "#",
