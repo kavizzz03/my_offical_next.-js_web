@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 // --- ELITE SEO & GLOBAL BRANDING ---
 export const metadata: Metadata = {
   // Sets the base URL for absolute links (like OG images)
-  metadataBase: new URL('https://my-offical-next-js-web-jwe4.vercel.app/'),
+  metadataBase: new URL('https://www.kavindubogahawatte.dev/'),
   
   title: {
     default: "Kavindu Bogahawatte | Backend Engineer & System Architect",
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_LK",
-    url: "https://my-offical-next-js-web-jwe4.vercelapp/",
+    url: "https://www.kavindubogahawatte.dev/",
     title: "Kavindu Bogahawatte | Backend Architect & Mobile Specialist",
     description: "Developing robust backend systems and high-performance mobile applications with a focus on logic and stability.",
     siteName: "Kavindu Bogahawatte Professional Portfolio",
@@ -100,7 +100,7 @@ export default function RootLayout({
     "@type": "Person",
     "name": "Kavindu Bogahawatte",
     "alternateName": ["Kavindu Malshan", "Kavindu Nethvitha"],
-    "url": "https://my-offical-next-js-web-jwe4.vercelapp/",
+    "url": "https://www.kavindubogahawatte.dev/",
     "jobTitle": "Backend Engineer & System Architect",
     "alumniOf": [
       { "@type": "EducationalOrganization", "name": "SLIIT" },
