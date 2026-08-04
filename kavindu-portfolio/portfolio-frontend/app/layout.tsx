@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Headset } from "lucide-react"; 
+import { Headset, Terminal } from "lucide-react"; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,36 +15,33 @@ const geistMono = Geist_Mono({
 
 // --- ELITE SEO & GLOBAL BRANDING ---
 export const metadata: Metadata = {
-  // Sets the base URL for absolute links (like OG images)
-  metadataBase: new URL('https://www.kavindubogahawatte.dev/'),
+  metadataBase: new URL("https://www.kavindubogahawatte.dev/"),
   
   title: {
     default: "Kavindu Bogahawatte | Backend Engineer & System Architect",
-    template: "%s | Kavindu Malshan Nethvitha"
+    template: "%s | Kavindu Bogahawatte"
   },
-  description: "Official Portfolio of Kavindu Malshan Bogahawatte. Backend Engineer & Mobile Specialist based in Colombo. Expert in Node.js, Kotlin, and System Architecture. Alumnus of Mahanama College & SLIIT.",
+  description: "Official Portfolio of Kavindu Bogahawatte. Senior Backend Engineer & Mobile Specialist based in Colombo. Expert in Distributed Systems, Node.js, Kotlin, Microservices, and High-Throughput APIs.",
   
   keywords: [
-    // Identity Search (Broad & Specific)
+    // Identity Search
     "Kavindu Bogahawatte", 
     "Kavindu Malshan", 
     "Kavindu Nethvitha",
-    "Kavindu Bogahawatte Software Engineer",
-    // Education & Institutional SEO (Local Trust)
+    "Kavindu Bogahawatte Backend Engineer",
+    
+    // Core Technical Specializations (Backend & Architecture Focus)
+    "Backend Systems Architect Sri Lanka",
+    "Scalable API Developer Colombo",
+    "Kotlin Android Specialist",
+    "Node.js Microservices Architecture",
+    "WhatsApp Business API Gateway Specialist",
+    "Distributed Systems Engineer",
+    "Database Optimization & Security",
+
+    // Institutional & Trust SEO
     "Mahanama College Software Engineer",
-    "SLIIT Software Engineering Student", 
-    "SCU Australia Computer Science Sri Lanka",
-    "University of Bedfordshire Computing",
-    // Localized Professional Keywords
-    "Best Backend Developer Sri Lanka", 
-    "Software Engineering Services Colombo", 
-    "Freelance Android Developer Sri Lanka",
-    "Fullstack Engineer Colombo",
-    // Niche Technical Keywords (Backend Focus)
-    "Scalable API Architect Node.js",
-    "Kotlin Mobile Expert Sri Lanka",
-    "WhatsApp Business API Specialist",
-    "Enterprise System Architect Sri Lanka"
+    "SLIIT Computer Science Alumnus"
   ],
 
   alternates: {
@@ -53,7 +50,9 @@ export const metadata: Metadata = {
 
   authors: [{ name: "Kavindu Bogahawatte", url: "https://linkedin.com/in/kavindu-bogahawatte-7b3810320" }],
   creator: "Kavindu Bogahawatte",
-   verification: {
+  publisher: "Kavindu Bogahawatte",
+  
+  verification: {
     google: "FzKegiPkrjdWbLh3CY29yRzZX6NbKco1vU7qXEpVDfs",
   },
 
@@ -62,31 +61,37 @@ export const metadata: Metadata = {
     locale: "en_LK",
     url: "https://www.kavindubogahawatte.dev/",
     title: "Kavindu Bogahawatte | Backend Architect & Mobile Specialist",
-    description: "Developing robust backend systems and high-performance mobile applications with a focus on logic and stability.",
-    siteName: "Kavindu Bogahawatte Professional Portfolio",
-    // --- OG IMAGE CONFIGURATION ---
+    description: "Architecting high-throughput backend systems, robust API integrations, and resilient mobile applications built for scale.",
+    siteName: "Kavindu Bogahawatte Engine",
     images: [{
-      url: "og-image.png", // Now standardized to use metadataBase
+      url: "/og-image.png",
       width: 1200,
       height: 630,
-      alt: "Kavindu Bogahawatte - Professional Software Engineering Portfolio Preview"
+      alt: "Kavindu Bogahawatte - Backend Systems & API Architecture"
     }],
   },
 
-  // --- RELEVANT BRANDED ICONS ---
+  twitter: {
+    card: "summary_large_image",
+    title: "Kavindu Bogahawatte | Backend Engineer & System Architect",
+    description: "Specializing in server-side architecture, high-performance APIs, and robust mobile engines.",
+    images: ["/og-image.png"],
+  },
+
+  // --- BRANDED BACKEND / SERVER ARCHITECTURE ICONS ---
   icons: {
     icon: [
-      { url: "https://cdn-icons-png.flaticon.com/512/8759/8759045.png", sizes: "32x32", type: "image/png" },
-      { url: "https://cdn-icons-png.flaticon.com/512/606/606200.png", sizes: "16x16", type: "image/png" },
+      { url: "https://cdn-icons-png.flaticon.com/512/906/906343.png", sizes: "32x32", type: "image/png" }, // Server/Terminal icon
+      { url: "https://cdn-icons-png.flaticon.com/512/2165/2165061.png", sizes: "16x16", type: "image/png" }, // API/Code icon
     ],
     apple: [
-      { url: "https://cdn-icons-png.flaticon.com/512/8759/8759045.png", sizes: "180x180", type: "image/png" },
+      { url: "https://cdn-icons-png.flaticon.com/512/906/906343.png", sizes: "180x180", type: "image/png" },
     ],
   },
-}
+};
 
-export const viewport = {
-  themeColor: "#020617",
+export const viewport: Viewport = {
+  themeColor: "#0E1015",
 };
 
 export default function RootLayout({
@@ -94,7 +99,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // JSON-LD for Search Engines to understand your "Person" entity
+  // Rich JSON-LD Entity Markup for Search Crawlers
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -102,6 +107,19 @@ export default function RootLayout({
     "alternateName": ["Kavindu Malshan", "Kavindu Nethvitha"],
     "url": "https://www.kavindubogahawatte.dev/",
     "jobTitle": "Backend Engineer & System Architect",
+    "knowsAbout": [
+      "Backend Architecture",
+      "API Development",
+      "Node.js",
+      "Kotlin",
+      "MySQL",
+      "Distributed Systems",
+      "System Automation"
+    ],
+    "sameAs": [
+      "https://linkedin.com/in/kavindu-bogahawatte-7b3810320",
+      "https://github.com/kavindubogahawatte"
+    ],
     "alumniOf": [
       { "@type": "EducationalOrganization", "name": "SLIIT" },
       { "@type": "EducationalOrganization", "name": "Mahanama College" }
@@ -124,32 +142,38 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[#020617] text-slate-200 selection:bg-cyan-500/30 selection:text-black">
+      <body className="min-h-full flex flex-col bg-[#0E1015] text-[#E7E9EE] selection:bg-[#FF8A3D]/20 selection:text-[#FF8A3D] font-sans">
         <main className="flex-grow">
           {children}
         </main>
 
-        {/* --- GLOBAL ONLINE SUPPORT WIDGET --- */}
-        <div className="fixed bottom-8 right-8 z-[9999] flex flex-col items-end gap-4">
-          <div className="bg-white/5 backdrop-blur-md border border-white/10 px-4 py-2 rounded-2xl shadow-2xl animate-pulse mb-2">
-            <p className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              Engineer Active
-            </p>
+        {/* --- LIVE API / MONITORED SUPPORT WIDGET --- */}
+        <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3">
+          {/* Response Chip / Live Status Seal */}
+          <div className="bg-[#0E1015]/90 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-full shadow-2xl flex items-center gap-2.5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#33D17A] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#33D17A]"></span>
+            </span>
+            <span className="text-[11px] font-mono font-semibold tracking-wide text-slate-300 uppercase flex items-center gap-1.5">
+              API <span className="text-[#33D17A]">200 OK</span> • Node Active
+            </span>
           </div>
 
+          {/* Interactive Action Hub */}
           <a 
             href="https://wa.me/94740890730" 
             target="_blank"
             rel="noopener noreferrer"
-            className="group relative flex items-center justify-center w-16 h-16 bg-cyan-500 rounded-full text-black shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:scale-110 active:scale-95 transition-all duration-300"
+            aria-label="Direct Engineer Connect"
+            className="group relative flex items-center justify-center w-14 h-14 bg-[#FF8A3D] rounded-2xl text-[#0E1015] shadow-[0_0_20px_rgba(255,138,61,0.35)] hover:shadow-[0_0_30px_rgba(255,138,61,0.5)] hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20"
           >
-            <Headset size={28} />
-            <span className="absolute right-20 bg-slate-900 text-white text-[10px] font-bold py-2 px-4 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10 uppercase tracking-tighter">
-              Instant Connect
+            <Headset size={24} className="group-hover:rotate-12 transition-transform duration-300" />
+            
+            {/* Hover Tooltip Response Chip */}
+            <span className="absolute right-16 bg-[#0E1015] text-[#E7E9EE] text-[11px] font-mono font-medium py-2 px-3.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap border border-white/10 shadow-xl pointer-events-none flex items-center gap-2">
+              <Terminal size={12} className="text-[#FF8A3D]" />
+              <span>POST /direct_connect</span>
             </span>
           </a>
         </div>
