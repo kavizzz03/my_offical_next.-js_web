@@ -94,7 +94,7 @@ const TERMINAL_LINES = [
 ];
 
 const STACK_TICKER = [
-  'NODE.JS', 'EXPRESS', 'SPRING BOOT', 'PYTHON', 'PHP / LARAVEL', 'MONGODB',
+  'NODE.JS', 'EXPRESS', 'SPRING BOOT','JAVA', 'PYTHON', 'PHP / LARAVEL', 'MONGODB',
   'MYSQL', 'REDIS', 'KOTLIN', 'JETPACK COMPOSE', 'NEXT.JS', 'FIREBASE', 'REST / gRPC',
 ];
 
@@ -471,7 +471,7 @@ export default function Portfolio() {
         </Reveal>
 
         {/* ABOUT */}
-        <section id="about" className="mb-24 md:mb-40 scroll-mt-32">
+        <section id="about" className="mb-24 md:mb-40 scroll-mt-48">
           <Reveal className="flex items-center gap-3 mb-8">
             <span className="font-mono text-[10px] text-slate-600">GET</span>
             <h2 className="font-mono text-[10px] text-[#FF8A3D] uppercase tracking-[0.3em]">/about</h2>
@@ -509,7 +509,7 @@ export default function Portfolio() {
         </section>
 
         {/* STACK */}
-        <section id="stack" className="mb-24 md:mb-40 scroll-mt-32">
+        <section id="stack" className="mb-24 md:mb-40 scroll-mt-48">
           <Reveal className="flex items-center gap-3 mb-8">
             <span className="font-mono text-[10px] text-slate-600">GET</span>
             <h2 className="font-mono text-[10px] text-[#FF8A3D] uppercase tracking-[0.3em]">/stack</h2>
@@ -535,7 +535,7 @@ export default function Portfolio() {
         </section>
 
         {/* PROJECTS */}
-        <section id="projects" className="mb-24 md:mb-40 scroll-mt-32">
+        <section id="projects" className="mb-24 md:mb-40 scroll-mt-48">
           <Reveal className="flex items-center gap-3 mb-8">
             <span className="font-mono text-[10px] text-slate-600">GET</span>
             <h2 className="font-mono text-[10px] text-[#FF8A3D] uppercase tracking-[0.3em]">/projects</h2>
@@ -771,7 +771,7 @@ export default function Portfolio() {
           </div>
 
           <Reveal>
-            <div id="contact" className="bg-white/[0.02] p-6 md:p-10 rounded-3xl border border-white/10 relative overflow-hidden h-fit lg:mt-16 scroll-mt-32">
+            <div id="contact" className="bg-white/[0.02] p-6 md:p-10 rounded-3xl border border-white/10 relative overflow-hidden h-fit lg:mt-16 scroll-mt-48">
               <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-[#FF8A3D]/10 blur-3xl" />
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-8">
