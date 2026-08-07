@@ -275,6 +275,17 @@ export default function Portfolio() {
 
   const activeImage = activeProjectImages[selectedImageIndex] || selectedProject?.imageUrl || '/og-image.png';
 
+  // Handle mobile nav link click: smooth scroll and close menu
+  const handleMobileNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const target = document.querySelector(href);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+      // Close menu after a short delay to let the scroll start
+      setTimeout(() => setNavOpen(false), 200);
+    }
+  };
+
   return (
     <div className="portfolio-root min-h-screen bg-[#08090C] text-slate-300 selection:bg-[#FF8A3D]/30 overflow-x-hidden">
       <div className="fixed inset-0 -z-10">
@@ -298,7 +309,7 @@ export default function Portfolio() {
         </div>
       </div>
 
-      {/* floating pill nav */}
+      {/* floating pill nav — with hamburger menu on mobile */}
       <nav className="fixed top-11 md:top-12 w-full z-50 px-3 md:px-6">
         <div className="max-w-6xl mx-auto rounded-2xl border border-white/10 bg-[#0B0C10]/85 backdrop-blur-xl shadow-lg shadow-black/30">
           <div className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6">
@@ -307,6 +318,7 @@ export default function Portfolio() {
               <span className="font-display font-bold tracking-tight text-sm md:text-base text-white whitespace-nowrap">Kavindu Bogahawatte</span>
             </a>
 
+            {/* Desktop nav links */}
             <div className="hidden md:flex gap-7 font-mono text-[11px] tracking-wide text-slate-500">
               {navLinks.map((l) => (
                 <a key={l.href} href={l.href} className="hover:text-[#FF8A3D] transition-colors">
@@ -315,6 +327,7 @@ export default function Portfolio() {
               ))}
             </div>
 
+            {/* Mobile hamburger */}
             <button
               type="button"
               onClick={() => setNavOpen((v) => !v)}
@@ -336,7 +349,12 @@ export default function Portfolio() {
               >
                 <div className="flex flex-col p-4 gap-1 font-mono text-xs">
                   {navLinks.map((l) => (
-                    <a key={l.href} href={l.href} onClick={() => setNavOpen(false)} className="flex items-center gap-2 py-2.5 px-2 rounded-lg text-slate-400 hover:text-[#FF8A3D] hover:bg-white/[0.03]">
+                    <a
+                      key={l.href}
+                      href={l.href}
+                      onClick={(e) => handleMobileNavClick(e, l.href)}
+                      className="flex items-center gap-2 py-2.5 px-2 rounded-lg text-slate-400 hover:text-[#FF8A3D] hover:bg-white/[0.03]"
+                    >
                       <span className="text-slate-600">{l.method}</span> {l.label}
                     </a>
                   ))}
@@ -349,22 +367,22 @@ export default function Portfolio() {
 
       <main id="top" className="max-w-7xl mx-auto px-4 md:px-6 pt-36 md:pt-44">
         {/* HERO */}
-        <section className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center mb-28 md:mb-44">
+        <section className="grid lg:grid-cols-12 gap-8 md:gap-12 lg:gap-16 items-center mb-20 md:mb-28 lg:mb-44">
           <div className="lg:col-span-7 order-2 lg:order-1">
             <motion.div
               initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-              className="flex items-center justify-between gap-6 mb-8"
+              className="flex items-center justify-between gap-6 mb-6 md:mb-8"
             >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03]">
                 <StatusDot />
-                <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-400">Backend &amp; Systems Engineer</span>
+                <span className="font-mono text-[8px] md:text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-400">Backend &amp; Systems Engineer</span>
               </div>
               <RotatingSeal />
             </motion.div>
 
             <motion.h1
               initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.08 }}
-              className="font-display text-[2.6rem] leading-[1.04] sm:text-5xl md:text-6xl lg:text-[4.6rem] font-bold tracking-tight mb-8 text-white"
+              className="font-display text-[2.2rem] leading-[1.05] sm:text-5xl md:text-6xl lg:text-[4.6rem] font-bold tracking-tight mb-6 md:mb-8 text-white"
             >
               I build the backbone
               <br />
@@ -375,22 +393,22 @@ export default function Portfolio() {
 
             <motion.p
               initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.16 }}
-              className="text-base md:text-lg text-slate-400 leading-relaxed max-w-xl mb-10"
+              className="text-sm md:text-base lg:text-lg text-slate-400 leading-relaxed max-w-xl mb-8 md:mb-10"
             >
               I design and ship the APIs, databases, and mobile back-ends that hold a product together — engineered for stability under real load, not just a working demo.
             </motion.p>
 
-            <motion.div initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.22 }} className="flex flex-wrap items-center gap-4 mb-8">
-              <a href="#projects" className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#FF8A3D] text-black font-semibold text-sm hover:bg-[#ffa15e] transition-colors">
+            <motion.div initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.22 }} className="flex flex-wrap items-center gap-3 md:gap-4 mb-6 md:mb-8">
+              <a href="#projects" className="group inline-flex items-center gap-2 px-5 md:px-6 py-3 md:py-3.5 rounded-xl bg-[#FF8A3D] text-black font-semibold text-sm hover:bg-[#ffa15e] transition-colors">
                 View projects
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </a>
-              <a href="#contact" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/10 bg-white/[0.02] font-semibold text-sm text-slate-300 hover:border-[#FF8A3D]/50 hover:text-white transition-colors">
+              <a href="#contact" className="inline-flex items-center gap-2 px-5 md:px-6 py-3 md:py-3.5 rounded-xl border border-white/10 bg-white/[0.02] font-semibold text-sm text-slate-300 hover:border-[#FF8A3D]/50 hover:text-white transition-colors">
                 Let&apos;s talk
               </a>
             </motion.div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 md:gap-3">
               {socialLinks.map((link, i) => (
                 <motion.a
                   whileHover={{ y: -3 }}
@@ -398,7 +416,7 @@ export default function Portfolio() {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#FF8A3D]/50 hover:bg-[#FF8A3D]/5 text-slate-400 hover:text-[#FF8A3D] transition-all"
+                  className="p-2.5 md:p-3 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#FF8A3D]/50 hover:bg-[#FF8A3D]/5 text-slate-400 hover:text-[#FF8A3D] transition-all"
                   title={link.label}
                 >
                   {link.icon}
@@ -453,15 +471,15 @@ export default function Portfolio() {
         </section>
 
         {/* STACK TICKER */}
-        <Reveal className="mb-28 md:mb-44 -mx-4 md:-mx-6">
+        <Reveal className="mb-20 md:mb-28 lg:mb-44 -mx-4 md:-mx-6">
           <div className="overflow-hidden border-y border-white/5 bg-[#050609] py-4">
             <motion.div
-              className="flex gap-10 md:gap-14 whitespace-nowrap font-mono text-[11px] md:text-xs uppercase tracking-[0.2em] text-slate-600"
+              className="flex gap-8 md:gap-10 lg:gap-14 whitespace-nowrap font-mono text-[10px] md:text-xs uppercase tracking-[0.2em] text-slate-600"
               animate={prefersReducedMotion ? {} : { x: ['0%', '-50%'] }}
               transition={{ repeat: Infinity, duration: 32, ease: 'linear' }}
             >
               {[...STACK_TICKER, ...STACK_TICKER].map((item, i) => (
-                <span key={`${item}-${i}`} className="flex items-center gap-10 md:gap-14">
+                <span key={`${item}-${i}`} className="flex items-center gap-8 md:gap-10 lg:gap-14">
                   {item}
                   <span className="text-[#FF8A3D]/50">◆</span>
                 </span>
@@ -471,21 +489,21 @@ export default function Portfolio() {
         </Reveal>
 
         {/* ABOUT */}
-        <section id="about" className="mb-24 md:mb-40 scroll-mt-48">
-          <Reveal className="flex items-center gap-3 mb-8">
+        <section id="about" className="mb-20 md:mb-24 lg:mb-40 scroll-mt-48">
+          <Reveal className="flex items-center gap-3 mb-6 md:mb-8">
             <span className="font-mono text-[10px] text-slate-600">GET</span>
             <h2 className="font-mono text-[10px] text-[#FF8A3D] uppercase tracking-[0.3em]">/about</h2>
             <div className="h-px flex-1 bg-white/5" />
           </Reveal>
 
           <Reveal delay={0.05}>
-            <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 bg-white/[0.02] border border-white/5 rounded-3xl p-6 md:p-12 relative overflow-hidden">
+            <div className="grid lg:grid-cols-2 gap-8 md:gap-10 lg:gap-16 bg-white/[0.02] border border-white/5 rounded-2xl md:rounded-3xl p-5 md:p-8 lg:p-12 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-[0.04] hidden md:block"><Workflow size={200} /></div>
               <div>
-                <h3 className="font-display text-2xl md:text-3xl font-bold text-white mb-6">Core philosophy</h3>
-                <div className="space-y-6 text-slate-400 leading-relaxed text-sm md:text-base">
+                <h3 className="font-display text-xl md:text-2xl lg:text-3xl font-bold text-white mb-4 md:mb-6">Core philosophy</h3>
+                <div className="space-y-4 md:space-y-6 text-slate-400 leading-relaxed text-sm md:text-base">
                   <p>I focus on what happens beneath the surface: <span className="text-[#FF8A3D] font-semibold">logic, stability, and speed</span>. While others polish the interface, I&apos;m architecting the APIs and database structures that carry the load.</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                     <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-[#FF8A3D]/30 transition-colors">
                       <Zap className="text-[#FF8A3D] mb-2" size={20} />
                       <h4 className="text-white font-semibold text-xs uppercase tracking-wide">Adaptive logic</h4>
@@ -500,7 +518,7 @@ export default function Portfolio() {
                 </div>
               </div>
               <div className="flex flex-col justify-center">
-                <blockquote className="font-display text-lg md:text-2xl font-medium italic text-slate-300 border-l-2 border-[#FF8A3D] pl-6 md:pl-8">
+                <blockquote className="font-display text-base md:text-lg lg:text-2xl font-medium italic text-slate-300 border-l-2 border-[#FF8A3D] pl-4 md:pl-6 lg:pl-8">
                   I don&apos;t just write code — I engineer scalable foundations that hold up under the pressure of real-world demand.
                 </blockquote>
               </div>
@@ -509,23 +527,23 @@ export default function Portfolio() {
         </section>
 
         {/* STACK */}
-        <section id="stack" className="mb-24 md:mb-40 scroll-mt-48">
-          <Reveal className="flex items-center gap-3 mb-8">
+        <section id="stack" className="mb-20 md:mb-24 lg:mb-40 scroll-mt-48">
+          <Reveal className="flex items-center gap-3 mb-6 md:mb-8">
             <span className="font-mono text-[10px] text-slate-600">GET</span>
             <h2 className="font-mono text-[10px] text-[#FF8A3D] uppercase tracking-[0.3em]">/stack</h2>
             <div className="h-px flex-1 bg-white/5" />
           </Reveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {[
               { icon: <Server className="text-[#FF8A3D] mb-4" size={22} />, title: 'Server-side logic', items: ['Node.js & Express', 'Java (Spring Boot)', 'Python (Automation)', 'PHP & Laravel'] },
               { icon: <Database className="text-[#FF8A3D] mb-4" size={22} />, title: 'Data & communications', items: ['MongoDB & MySQL', 'Redis (Caching)', 'WhatsApp Business API', 'Bulk SMS gateways'] },
               { icon: <Smartphone className="text-[#FF8A3D] mb-4" size={22} />, title: 'Mobile ecosystem', items: ['Kotlin & Compose', 'Next.js (App Router)', 'API design (REST/gRPC)', 'Firebase services'] },
             ].map((col, i) => (
               <Reveal key={col.title} delay={i * 0.08}>
-                <motion.div whileHover={{ y: -4 }} className="p-6 md:p-8 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-[#FF8A3D]/30 transition-all h-full">
+                <motion.div whileHover={{ y: -4 }} className="p-5 md:p-6 lg:p-8 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-[#FF8A3D]/30 transition-all h-full">
                   {col.icon}
-                  <h3 className="font-display text-white font-semibold mb-4 text-sm md:text-base">{col.title}</h3>
-                  <ul className="space-y-2 text-[12px] md:text-sm text-slate-500 font-mono">
+                  <h3 className="font-display text-white font-semibold mb-3 md:mb-4 text-sm md:text-base">{col.title}</h3>
+                  <ul className="space-y-1.5 md:space-y-2 text-[11px] md:text-sm text-slate-500 font-mono">
                     {col.items.map((it) => <li key={it}>{it}</li>)}
                   </ul>
                 </motion.div>
@@ -535,8 +553,8 @@ export default function Portfolio() {
         </section>
 
         {/* PROJECTS */}
-        <section id="projects" className="mb-24 md:mb-40 scroll-mt-48">
-          <Reveal className="flex items-center gap-3 mb-8">
+        <section id="projects" className="mb-20 md:mb-24 lg:mb-40 scroll-mt-48">
+          <Reveal className="flex items-center gap-3 mb-6 md:mb-8">
             <span className="font-mono text-[10px] text-slate-600">GET</span>
             <h2 className="font-mono text-[10px] text-[#FF8A3D] uppercase tracking-[0.3em]">/projects</h2>
             <div className="h-px flex-1 bg-white/5" />
@@ -545,13 +563,13 @@ export default function Portfolio() {
 
           <div>
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
                 {[1, 2, 3].map(n => <div key={n} className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />)}
               </div>
             ) : projects.length === 0 ? (
               <p className="text-slate-500 font-mono text-sm">// no deployments returned by the API</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
                 {projects.map((proj, idx) => {
                   const isLive = (proj.status || '').toLowerCase() === 'live';
                   return (
@@ -568,9 +586,9 @@ export default function Portfolio() {
                             <StatusDot ok={isLive} /> {proj.status}
                           </div>
                         </div>
-                        <div className="p-5 md:p-6">
+                        <div className="p-4 md:p-5 lg:p-6">
                           <div className="flex justify-between items-start gap-3 mb-2">
-                            <h4 className="font-display text-lg font-bold text-white line-clamp-1">{proj.name}</h4>
+                            <h4 className="font-display text-base md:text-lg font-bold text-white line-clamp-1">{proj.name}</h4>
                             <span className="text-[9px] font-mono text-slate-500 border border-white/10 px-2 py-0.5 rounded-full uppercase shrink-0">{proj.category}</span>
                           </div>
                           <p className="text-slate-400 text-sm mb-4 line-clamp-3">{proj.description}</p>
@@ -604,7 +622,7 @@ export default function Portfolio() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-xl flex items-center justify-center px-4 py-8"
+              className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-xl flex items-center justify-center px-3 md:px-4 py-4 md:py-8"
               onClick={closeProject}
             >
               <motion.div
@@ -613,12 +631,12 @@ export default function Portfolio() {
                 exit={{ opacity: 0, y: 12, scale: 0.98 }}
                 transition={{ duration: 0.22 }}
                 onClick={(event) => event.stopPropagation()}
-                className="w-full max-w-6xl max-h-[92vh] overflow-y-auto bg-[#0E1015] border border-white/10 rounded-3xl shadow-2xl"
+                className="w-full max-w-6xl max-h-[92vh] overflow-y-auto bg-[#0E1015] border border-white/10 rounded-2xl md:rounded-3xl shadow-2xl"
               >
-                <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-5 md:px-8 py-4 border-b border-white/10 bg-[#0E1015]/95 backdrop-blur-xl">
+                <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-4 md:px-8 py-4 border-b border-white/10 bg-[#0E1015]/95 backdrop-blur-xl">
                   <div>
                     <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#FF8A3D] mb-1">/projects/{idSlug(selectedProject.name)}</p>
-                    <h3 className="font-display text-xl md:text-2xl font-bold text-white">{selectedProject.name}</h3>
+                    <h3 className="font-display text-lg md:text-2xl font-bold text-white">{selectedProject.name}</h3>
                   </div>
                   <button
                     type="button"
@@ -631,7 +649,7 @@ export default function Portfolio() {
                 </div>
 
                 <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-0">
-                  <div className="p-5 md:p-8 border-b lg:border-b-0 lg:border-r border-white/10">
+                  <div className="p-4 md:p-8 border-b lg:border-b-0 lg:border-r border-white/10">
                     <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/20">
                       <div className="relative aspect-[16/10] bg-slate-900">
                         <ImageWithFallback src={activeImage} alt={selectedProject.name} className="w-full h-full object-cover" />
@@ -642,7 +660,7 @@ export default function Portfolio() {
                             <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">Gallery</p>
                             <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">{selectedImageIndex + 1} / {activeProjectImages.length}</p>
                           </div>
-                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 md:gap-3">
                             {activeProjectImages.map((image, imageIndex) => (
                               <button
                                 key={`${image}-${imageIndex}`}
@@ -681,7 +699,7 @@ export default function Portfolio() {
                     </div>
                   </div>
 
-                  <div className="p-5 md:p-8 bg-white/[0.02]">
+                  <div className="p-4 md:p-8 bg-white/[0.02]">
                     <div className="space-y-6">
                       <div>
                         <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500 mb-2">Project summary</p>
@@ -744,14 +762,14 @@ export default function Portfolio() {
         </AnimatePresence>
 
         {/* EDUCATION + CONTACT */}
-        <section className="grid lg:grid-cols-2 gap-16 md:gap-20 mb-24 md:mb-40">
+        <section className="grid lg:grid-cols-2 gap-12 md:gap-16 lg:gap-20 mb-20 md:mb-24 lg:mb-40">
           <div>
-            <Reveal className="flex items-center gap-3 mb-10 md:mb-12">
+            <Reveal className="flex items-center gap-3 mb-6 md:mb-8 lg:mb-10">
               <span className="font-mono text-[10px] text-slate-600">GET</span>
               <h2 className="font-mono text-[10px] text-[#FF8A3D] uppercase tracking-[0.3em]">/education</h2>
               <GraduationCap className="text-slate-600" size={16} />
             </Reveal>
-            <div className="space-y-10 border-l border-white/5 ml-4 pl-8 relative">
+            <div className="space-y-8 md:space-y-10 border-l border-white/5 ml-4 pl-6 md:pl-8 relative">
               {[
                 { period: '2026 — PRESENT', school: 'University of Bedfordshire', detail: 'BSc (Hons) Software Engineering', dot: 'bg-[#FF8A3D]' },
                 { period: '2023 — 2026', school: 'SLIIT City Uni', detail: 'Computer Science / Software Engineering', dot: 'bg-slate-700' },
@@ -760,9 +778,9 @@ export default function Portfolio() {
               ].map((edu, i) => (
                 <Reveal key={edu.school} delay={i * 0.06} y={14}>
                   <div className="relative">
-                    <div className={`absolute -left-[41px] top-1 w-4 h-4 rounded-full ${edu.dot} border-4 border-[#08090C]`} />
+                    <div className={`absolute -left-[33px] md:-left-[41px] top-1 w-3 h-3 md:w-4 md:h-4 rounded-full ${edu.dot} border-4 border-[#08090C]`} />
                     <span className="font-mono text-[10px] text-[#FF8A3D] font-semibold tracking-widest">{edu.period}</span>
-                    <h3 className="font-display text-lg font-bold text-white mt-1">{edu.school}</h3>
+                    <h3 className="font-display text-base md:text-lg font-bold text-white mt-1">{edu.school}</h3>
                     <p className="text-slate-500 text-xs uppercase tracking-wide">{edu.detail}</p>
                   </div>
                 </Reveal>
@@ -771,15 +789,15 @@ export default function Portfolio() {
           </div>
 
           <Reveal>
-            <div id="contact" className="bg-white/[0.02] p-6 md:p-10 rounded-3xl border border-white/10 relative overflow-hidden h-fit lg:mt-16 scroll-mt-48">
+            <div id="contact" className="bg-white/[0.02] p-5 md:p-8 lg:p-10 rounded-2xl md:rounded-3xl border border-white/10 relative overflow-hidden h-fit lg:mt-16 scroll-mt-48">
               <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-[#FF8A3D]/10 blur-3xl" />
               <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-8">
+                <div className="flex items-center gap-3 mb-6 md:mb-8">
                   <span className="font-mono text-[10px] text-slate-600">POST</span>
                   <h2 className="font-mono text-[10px] text-[#FF8A3D] uppercase tracking-[0.3em]">/contact</h2>
                 </div>
-                <h3 className="font-display text-2xl sm:text-3xl font-bold text-white mb-8">Let&apos;s build something reliable.</h3>
-                <div className="grid grid-cols-1 gap-4">
+                <h3 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-6 md:mb-8">Let&apos;s build something reliable.</h3>
+                <div className="grid grid-cols-1 gap-3 md:gap-4">
                   <a href="tel:+94740890730" className="flex items-center gap-4 group rounded-2xl p-3 md:p-4 bg-white/[0.02] border border-white/5 hover:border-[#FF8A3D]/30 transition-colors">
                     <div className="w-11 h-11 rounded-xl bg-white/[0.04] flex items-center justify-center group-hover:bg-[#FF8A3D] transition-colors shrink-0">
                       <Phone className="text-white group-hover:text-black" size={17} />
@@ -806,8 +824,8 @@ export default function Portfolio() {
         </section>
       </main>
 
-      <footer className="border-t border-white/5 py-10 bg-[#050609]">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 opacity-50 hover:opacity-100 transition-opacity">
+      <footer className="border-t border-white/5 py-8 md:py-10 bg-[#050609]">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col md:flex-row justify-between items-center gap-4 opacity-50 hover:opacity-100 transition-opacity">
           <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-center md:text-left">© 2026 Kavindu Bogahawatte — Backend &amp; Mobile Specialist</p>
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest">
             <MapPin size={13} className="text-[#FF8A3D]" /> Colombo, Sri Lanka
