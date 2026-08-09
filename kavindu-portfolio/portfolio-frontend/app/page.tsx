@@ -6,22 +6,12 @@ import {
   Database, Mail, MapPin,
   Phone, Server,
   Box, Terminal, Zap, Workflow, ShieldCheck,
-  ArrowUpRight, Clock, Menu, X, ArrowRight, Activity
+  ArrowUpRight, Clock, Menu, X, ArrowRight, Activity,
+  ChevronLeft, ChevronRight, Maximize2, Star
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
-/* Design tokens                                                       */
-/* ink        #08090C  base background                                 */
-/* ink2       #0E1015  panel / card background                         */
-/* line       white/5–10  hairline borders on dark                     */
-/* text       #E7E9EE / slate-400  primary / muted copy                 */
-/* signal     #FF8A3D  primary accent — status, labels, CTAs            */
-/* pulse      #7C9CFF → #C084FC  gradient accent — reserved for one     */
-/*            headline phrase per section, nothing else                */
-/* ok         #33D17A  status-only accent (never decorative)            */
-/* Signature: the site frames itself as a live, monitored API — an     */
-/* uptime strip, a spinning "status seal," and floating response       */
-/* chips instead of decorative art.                                    */
+/* Design tokens & helper components (unchanged)                      */
 /* ------------------------------------------------------------------ */
 
 function ImageWithFallback({ src, alt, className, fallback = '/og-image.png', ...rest }: { src: string; alt: string; className?: string; fallback?: string } & React.ImgHTMLAttributes<HTMLImageElement>) {
@@ -56,6 +46,7 @@ interface Project {
   client?: string;
   overview?: string;
   highlights?: string[];
+  createdAt?: string;
 }
 
 type ProjectApi = {
@@ -129,16 +120,15 @@ function StatusDot({ ok = true }: { ok?: boolean }) {
   );
 }
 
-/* Reveal — the single reusable scroll-in primitive used everywhere below,
-   so every section enters the same considered way instead of scattered effects. */
-function Reveal({ children, delay = 0, className = '', y = 22 }: { children: React.ReactNode; delay?: number; className?: string; y?: number }) {
+/* Reveal – enhanced with spring */
+function Reveal({ children, delay = 0, className = '', y = 22, duration = 0.6 }: { children: React.ReactNode; delay?: number; className?: string; y?: number; duration?: number }) {
   const prefersReducedMotion = useReducedMotion();
   return (
     <motion.div
       initial={prefersReducedMotion ? {} : { opacity: 0, y }}
       whileInView={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}
       className={className}
     >
       {children}
@@ -146,8 +136,7 @@ function Reveal({ children, delay = 0, className = '', y = 22 }: { children: Rea
   );
 }
 
-/* RotatingSeal — spinning status badge, the page's signature mark.
-   Replaces decorative art with something native to the "live service" concept. */
+/* RotatingSeal – unchanged */
 function RotatingSeal({ label = 'AVAILABLE FOR WORK' }: { label?: string }) {
   const prefersReducedMotion = useReducedMotion();
   const full = `${label} • ${label} • `;
@@ -190,6 +179,7 @@ function FloatingChip({ label, sub, pos, delay, duration }: { label: string; sub
   );
 }
 
+/* ===== MAIN COMPONENT ===== */
 export default function Portfolio() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -199,16 +189,23 @@ export default function Portfolio() {
   const [navOpen, setNavOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
   const [scrolled, setScrolled] = useState(false);
+  const [showAllProjects, setShowAllProjects] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
   const prefersReducedMotion = useReducedMotion();
   const headerRef = useRef<HTMLDivElement | null>(null);
 
+  // Modal & lightbox states
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
+  const carouselAutoRef = useRef<NodeJS.Timeout | null>(null);
+
+  // --- Effects (uptime, header, scroll, nav, etc.) ---
   useEffect(() => {
     const id = setInterval(() => setUptime((s) => s + 1), 1000);
     return () => clearInterval(id);
   }, []);
 
-  // Measure the real fixed-header height so scroll offsets and section
-  // scroll-margin stay correct across every breakpoint, instead of guessing.
   useEffect(() => {
     const el = headerRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
@@ -222,8 +219,6 @@ export default function Portfolio() {
     return () => { ro.disconnect(); window.removeEventListener('resize', setVar); };
   }, []);
 
-  // Subtle header elevation once the page scrolls, and track which section
-  // is currently in view so the nav can reflect real position on the page.
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
@@ -247,7 +242,6 @@ export default function Portfolio() {
     return () => observer.disconnect();
   }, [loading]);
 
-  // Close the mobile menu on Escape for keyboard users.
   useEffect(() => {
     if (!navOpen) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setNavOpen(false); };
@@ -255,6 +249,7 @@ export default function Portfolio() {
     return () => window.removeEventListener('keydown', onKey);
   }, [navOpen]);
 
+  // --- Fetch projects ---
   useEffect(() => {
     const apiUrls = [
       'http://localhost:5000/api/projects',
@@ -289,7 +284,14 @@ export default function Portfolio() {
             client: p.client || p.company || 'Private project',
             overview: p.overview || p.description || '',
             highlights: Array.isArray(p.highlights) ? p.highlights : [],
+            createdAt: p.createdAt || new Date().toISOString(),
           }));
+
+          mapped.sort((a, b) => {
+            const dateA = new Date(a.createdAt || 0).getTime();
+            const dateB = new Date(b.createdAt || 0).getTime();
+            return dateB - dateA;
+          });
 
           setProjects(mapped);
           setLoading(false);
@@ -304,6 +306,49 @@ export default function Portfolio() {
     load();
   }, []);
 
+  // --- Auto-play carousel ---
+  useEffect(() => {
+    const featured = projects.slice(0, 3);
+    if (featured.length === 0) return;
+    if (carouselAutoRef.current) clearInterval(carouselAutoRef.current);
+    if (!prefersReducedMotion) {
+      carouselAutoRef.current = setInterval(() => {
+        setCarouselIndex((prev) => (prev + 1) % featured.length);
+      }, 6000);
+    }
+    return () => {
+      if (carouselAutoRef.current) clearInterval(carouselAutoRef.current);
+    };
+  }, [projects, prefersReducedMotion]);
+
+  // --- Modal auto-play ---
+  useEffect(() => {
+    if (!selectedProject) {
+      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+      return;
+    }
+    const images = activeProjectImages;
+    if (images.length <= 1) {
+      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+      return;
+    }
+    if (isAutoPlaying && !lightboxOpen) {
+      autoPlayRef.current = setInterval(() => {
+        setSelectedImageIndex((prev) => (prev + 1) % images.length);
+      }, 5000);
+    } else {
+      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    }
+    return () => {
+      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    };
+  }, [selectedProject, isAutoPlaying, lightboxOpen]);
+
+  const stopAutoPlay = useCallback(() => {
+    if (isAutoPlaying) setIsAutoPlaying(false);
+  }, [isAutoPlaying]);
+
+  // --- Social links ---
   const socialLinks = [
     { label: 'LinkedIn', href: 'https://linkedin.com/in/kavindu-bogahawatte-7b3810320', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect width="4" height="12" x="2" y="9" /><circle cx="4" cy="4" r="2" /></svg> },
     { label: 'GitHub', href: 'https://github.com/kavizzz03', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.28 1.15-.28 2.35 0 3.5-.73 1.02-1.08 2.25-1 3.5 0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></svg> },
@@ -315,11 +360,16 @@ export default function Portfolio() {
   const openProject = (project: Project) => {
     setSelectedProject(project);
     setSelectedImageIndex(0);
+    setIsAutoPlaying(true);
+    setLightboxOpen(false);
   };
 
   const closeProject = () => {
     setSelectedProject(null);
     setSelectedImageIndex(0);
+    setIsAutoPlaying(true);
+    setLightboxOpen(false);
+    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
   };
 
   const activeProjectImages = selectedProject
@@ -328,9 +378,29 @@ export default function Portfolio() {
 
   const activeImage = activeProjectImages[selectedImageIndex] || selectedProject?.imageUrl || '/og-image.png';
 
-  // ========================== FIXED NAVIGATION ==========================
-  // Close mobile menu first, wait for exit animation, then scroll to target.
-  // This ensures the header height is recalculated after the menu hides.
+  const goToPrevImage = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (activeProjectImages.length === 0) return;
+    stopAutoPlay();
+    setSelectedImageIndex((prev) => (prev - 1 + activeProjectImages.length) % activeProjectImages.length);
+  }, [activeProjectImages.length, stopAutoPlay]);
+
+  const goToNextImage = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (activeProjectImages.length === 0) return;
+    stopAutoPlay();
+    setSelectedImageIndex((prev) => (prev + 1) % activeProjectImages.length);
+  }, [activeProjectImages.length, stopAutoPlay]);
+
+  const openLightbox = useCallback(() => {
+    setLightboxOpen(true);
+  }, []);
+
+  const closeLightbox = useCallback(() => {
+    setLightboxOpen(false);
+  }, []);
+
+  // --- Navigation ---
   const handleNavClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     const target = document.getElementById(id);
@@ -341,14 +411,14 @@ export default function Portfolio() {
       const top = target.getBoundingClientRect().top + window.scrollY - headerH - 16;
       window.scrollTo({ top: Math.max(top, 0), behavior: prefersReducedMotion ? 'auto' : 'smooth' });
       history.replaceState(null, '', `#${id}`);
-      setNavOpen(false); // ensure closed
+      setNavOpen(false);
     };
 
     if (navOpen) {
-      setNavOpen(false);              // close the menu
-      setTimeout(scrollToTarget, 300); // wait for exit animation (0.25s)
+      setNavOpen(false);
+      setTimeout(scrollToTarget, 300);
     } else {
-      scrollToTarget();               // desktop or already closed
+      scrollToTarget();
     }
   }, [navOpen, prefersReducedMotion]);
 
@@ -358,6 +428,33 @@ export default function Portfolio() {
     history.replaceState(null, '', '#top');
     setNavOpen(false);
   }, [prefersReducedMotion]);
+
+  // --- Carousel navigation ---
+  const goToCarouselSlide = (index: number) => {
+    setCarouselIndex(index);
+    // reset auto-play timer
+    if (carouselAutoRef.current) clearInterval(carouselAutoRef.current);
+    if (!prefersReducedMotion) {
+      carouselAutoRef.current = setInterval(() => {
+        const featured = projects.slice(0, 3);
+        setCarouselIndex((prev) => (prev + 1) % featured.length);
+      }, 6000);
+    }
+  };
+
+  const prevCarousel = () => {
+    const featured = projects.slice(0, 3);
+    setCarouselIndex((prev) => (prev - 1 + featured.length) % featured.length);
+  };
+
+  const nextCarousel = () => {
+    const featured = projects.slice(0, 3);
+    setCarouselIndex((prev) => (prev + 1) % featured.length);
+  };
+
+  // ===== RENDER =====
+  const featuredProjects = projects.slice(0, 3);
+  const currentFeatured = featuredProjects[carouselIndex] || null;
 
   return (
     <div className="portfolio-root min-h-screen bg-[#08090C] text-slate-300 selection:bg-[#FF8A3D]/30 overflow-x-hidden">
@@ -369,14 +466,25 @@ export default function Portfolio() {
         Skip to content
       </a>
 
+      {/* Background gradients (subtle animated) */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,#1a1206_0%,transparent_45%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_30%,#0d1230_0%,transparent_40%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:32px_32px]" />
+        <motion.div
+          className="absolute inset-0 opacity-20"
+          animate={{
+            background: [
+              'radial-gradient(circle at 20% 30%, #FF8A3D10 0%, transparent 50%)',
+              'radial-gradient(circle at 80% 70%, #7C9CFF10 0%, transparent 50%)',
+              'radial-gradient(circle at 20% 30%, #FF8A3D10 0%, transparent 50%)',
+            ]
+          }}
+          transition={{ repeat: Infinity, duration: 12, ease: 'linear' }}
+        />
       </div>
 
-      {/* HEADER — status strip + nav pill measured as one unit so every
-          section's scroll offset is always exactly right, on any breakpoint. */}
+      {/* HEADER (unchanged) */}
       <div ref={headerRef} className="fixed top-0 inset-x-0 z-[60]">
         <div className="w-full bg-[#050609]/95 backdrop-blur border-b border-white/5">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 h-7 sm:h-8 flex items-center justify-between font-mono text-[9px] sm:text-[10px] tracking-wider text-slate-500">
@@ -400,7 +508,6 @@ export default function Portfolio() {
                 <span className="font-display font-bold tracking-tight text-sm md:text-base text-white whitespace-nowrap">Kavindu Bogahawatte</span>
               </a>
 
-              {/* Desktop nav links */}
               <div className="hidden md:flex items-center gap-1 font-mono text-[11px] tracking-wide">
                 {NAV_LINKS.map((l) => {
                   const isActive = activeSection === l.id;
@@ -425,7 +532,6 @@ export default function Portfolio() {
                 </a>
               </div>
 
-              {/* Mobile hamburger */}
               <button
                 type="button"
                 onClick={() => setNavOpen((v) => !v)}
@@ -479,11 +585,12 @@ export default function Portfolio() {
       </div>
 
       <main id="top" className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6 pt-28 sm:pt-32 md:pt-36">
-        {/* HERO */}
+        {/* HERO (unchanged but with enhanced animation) */}
         <section className="grid lg:grid-cols-12 gap-8 sm:gap-10 md:gap-12 lg:gap-16 items-center mb-16 sm:mb-20 md:mb-28 lg:mb-40">
           <div className="lg:col-span-7 order-2 lg:order-1">
             <motion.div
               initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               className="flex items-center justify-between gap-4 sm:gap-6 mb-6 md:mb-8"
             >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03]">
@@ -494,7 +601,7 @@ export default function Portfolio() {
             </motion.div>
 
             <motion.h1
-              initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.08 }}
+              initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.08, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               className="font-display text-[2rem] xs:text-[2.3rem] leading-[1.08] sm:text-5xl md:text-6xl lg:text-[4.4rem] font-bold tracking-tight mb-5 sm:mb-6 md:mb-8 text-white"
             >
               I build the backbone
@@ -505,10 +612,10 @@ export default function Portfolio() {
             </motion.h1>
 
             <motion.p
-              initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.16 }}
+              initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.16, duration: 0.6 }}
               className="text-sm sm:text-base md:text-base lg:text-lg text-slate-400 leading-relaxed max-w-xl mb-7 sm:mb-8 md:mb-10"
             >
-              I design and ship the APIs, databases, and mobile back-ends that hold a product together — engineered for stability under real load, not just a working demo.
+              I design and ship the APIs, databases, and mobile backends that hold a product together engineered for stability under real load, not just a working demo.
             </motion.p>
 
             <motion.div initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.22 }} className="flex flex-wrap items-center gap-3 md:gap-4 mb-6 md:mb-8">
@@ -532,7 +639,8 @@ export default function Portfolio() {
             <div className="flex flex-wrap gap-2 md:gap-3">
               {socialLinks.map((link, i) => (
                 <motion.a
-                  whileHover={{ y: -3 }}
+                  whileHover={{ y: -3, scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   key={i}
                   href={link.href}
                   target="_blank"
@@ -559,7 +667,6 @@ export default function Portfolio() {
               </div>
             </div>
 
-            {/* terminal card — response body for the "engineer" endpoint referenced in the hero copy */}
             <motion.div
               initial={prefersReducedMotion ? {} : { y: 16, opacity: 0 }}
               animate={prefersReducedMotion ? {} : { y: 0, opacity: 1 }}
@@ -592,7 +699,7 @@ export default function Portfolio() {
           </div>
         </section>
 
-        {/* STACK TICKER */}
+        {/* STACK TICKER (unchanged) */}
         <Reveal className="mb-16 sm:mb-20 md:mb-28 lg:mb-40 -mx-4 sm:-mx-5 md:-mx-6">
           <div className="overflow-hidden border-y border-white/5 bg-[#050609] py-3.5 sm:py-4">
             <motion.div
@@ -610,14 +717,13 @@ export default function Portfolio() {
           </div>
         </Reveal>
 
-        {/* ABOUT */}
+        {/* ABOUT (unchanged) */}
         <section id="about" className="mb-16 sm:mb-20 md:mb-24 lg:mb-36 scroll-mt-24">
           <Reveal className="flex items-center gap-3 mb-6 md:mb-8">
             <span className="font-mono text-[10px] text-slate-600">GET</span>
             <h2 className="font-mono text-[10px] text-[#FF8A3D] uppercase tracking-[0.3em]">/about</h2>
             <div className="h-px flex-1 bg-white/5" />
           </Reveal>
-
           <Reveal delay={0.05}>
             <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 md:gap-10 lg:gap-16 bg-white/[0.02] border border-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 lg:p-12 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-[0.04] hidden md:block"><Workflow size={200} /></div>
@@ -629,7 +735,7 @@ export default function Portfolio() {
                     <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-[#FF8A3D]/30 transition-colors">
                       <Zap className="text-[#FF8A3D] mb-2" size={20} />
                       <h4 className="text-white font-semibold text-xs uppercase tracking-wide">Adaptive logic</h4>
-                      <p className="text-[11px] text-slate-500 mt-1">Rapidly mastering complex protocols and high-load architectures.</p>
+                      <p className="text-[11px] text-slate-500 mt-1">Rapidly mastering complex protocols and high load architectures.</p>
                     </div>
                     <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-[#33D17A]/30 transition-colors">
                       <ShieldCheck className="text-[#33D17A] mb-2" size={20} />
@@ -641,14 +747,14 @@ export default function Portfolio() {
               </div>
               <div className="flex flex-col justify-center">
                 <blockquote className="font-display text-base sm:text-lg md:text-lg lg:text-2xl font-medium italic text-slate-300 border-l-2 border-[#FF8A3D] pl-4 sm:pl-5 md:pl-6 lg:pl-8">
-                  I don&apos;t just write code — I engineer scalable foundations that hold up under the pressure of real-world demand.
+                  I don&apos;t just write code, I engineer scalable foundations that hold up under the pressure of real world demand.
                 </blockquote>
               </div>
             </div>
           </Reveal>
         </section>
 
-        {/* STACK */}
+        {/* STACK (unchanged) */}
         <section id="stack" className="mb-16 sm:mb-20 md:mb-24 lg:mb-36 scroll-mt-24">
           <Reveal className="flex items-center gap-3 mb-6 md:mb-8">
             <span className="font-mono text-[10px] text-slate-600">GET</span>
@@ -662,7 +768,7 @@ export default function Portfolio() {
               { icon: <Smartphone className="text-[#FF8A3D] mb-4" size={22} />, title: 'Mobile ecosystem', items: ['Kotlin & Compose', 'Next.js (App Router)', 'API design (REST/gRPC)', 'Firebase services'] },
             ].map((col, i) => (
               <Reveal key={col.title} delay={i * 0.08}>
-                <motion.div whileHover={{ y: -4 }} className="p-5 sm:p-6 md:p-6 lg:p-8 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-[#FF8A3D]/30 transition-all h-full">
+                <motion.div whileHover={{ y: -4, boxShadow: '0 8px 30px rgba(0,0,0,0.4)' }} className="p-5 sm:p-6 md:p-6 lg:p-8 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-[#FF8A3D]/30 transition-all h-full">
                   {col.icon}
                   <h3 className="font-display text-white font-semibold mb-3 md:mb-4 text-sm md:text-base">{col.title}</h3>
                   <ul className="space-y-1.5 md:space-y-2 text-[11px] md:text-sm text-slate-500 font-mono">
@@ -674,7 +780,7 @@ export default function Portfolio() {
           </div>
         </section>
 
-        {/* PROJECTS */}
+        {/* ===== PROJECTS with Carousel ===== */}
         <section id="projects" className="mb-16 sm:mb-20 md:mb-24 lg:mb-36 scroll-mt-24">
           <Reveal className="flex items-center gap-3 mb-6 md:mb-8">
             <span className="font-mono text-[10px] text-slate-600">GET</span>
@@ -685,62 +791,184 @@ export default function Portfolio() {
 
           <div>
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8">
-                {[1, 2, 3].map(n => <div key={n} className="h-64 bg-white/[0.03] rounded-2xl animate-pulse" />)}
+              <div className="bg-[#101218] border border-white/10 rounded-2xl p-8 md:p-12 lg:p-16">
+                <div className="flex flex-col items-center justify-center gap-5 text-center">
+                  <div className="flex items-center gap-3">
+                    <Terminal className="text-[#FF8A3D] motion-safe:animate-pulse" size={22} />
+                    <span className="font-mono text-sm text-slate-300">
+                      GET <span className="text-[#FF8A3D]">/projects</span>
+                    </span>
+                    <span className="font-mono text-[11px] text-slate-500 bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                      awaiting response
+                    </span>
+                  </div>
+                  <div className="w-full max-w-md h-1.5 bg-white/5 rounded-full overflow-hidden relative shadow-inner">
+                    <motion.div
+                      className="absolute inset-0 w-1/2 bg-gradient-to-r from-[#FF8A3D] via-[#C084FC] to-[#7C9CFF] rounded-full shadow-[0_0_12px_rgba(255,138,61,0.3)]"
+                      animate={prefersReducedMotion ? {} : { x: ['-100%', '200%'] }}
+                      transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+                    />
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <p className="font-mono text-[10px] text-slate-400 uppercase tracking-[0.15em]">⏳ Wake-up sequence in progress</p>
+                    <p className="font-mono text-[9px] text-slate-600 tracking-widest">Render backend is spinning up · this may take a few seconds</p>
+                  </div>
+                </div>
               </div>
             ) : projects.length === 0 ? (
               <p className="text-slate-500 font-mono text-sm">// no deployments returned by the API</p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8">
-                {projects.map((proj, idx) => {
-                  const isLive = (proj.status || '').toLowerCase() === 'live';
-                  return (
-                    <Reveal key={`${proj.name}-${idx}`} delay={(idx % 3) * 0.08}>
-                      <motion.article
-                        whileHover={{ y: -6 }}
-                        onClick={() => openProject(proj)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProject(proj); } }}
-                        className="group relative bg-[#101218] border border-white/10 rounded-2xl overflow-hidden shadow-lg cursor-pointer h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#FF8A3D]"
-                      >
-                        <div className="aspect-video bg-slate-900 relative overflow-hidden">
-                          <ImageWithFallback src={proj.imageUrl || '/og-image.png'} alt={proj.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-[#0B0C10]/10 to-transparent opacity-90" />
-                          <div className="absolute top-3 left-3 flex items-center gap-1.5 font-mono text-[9px] text-white/90 bg-black/50 backdrop-blur-md border border-white/10 px-2 py-1 rounded-full uppercase">
-                            <StatusDot ok={isLive} /> {proj.status}
-                          </div>
-                        </div>
-                        <div className="p-4 sm:p-5 md:p-5 lg:p-6">
-                          <div className="flex justify-between items-start gap-3 mb-2">
-                            <h4 className="font-display text-base md:text-lg font-bold text-white line-clamp-1">{proj.name}</h4>
-                            <span className="text-[9px] font-mono text-slate-500 border border-white/10 px-2 py-0.5 rounded-full uppercase shrink-0">{proj.category}</span>
-                          </div>
-                          <p className="text-slate-400 text-sm mb-4 line-clamp-3">{proj.description}</p>
-                          <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 mb-4">
-                            <span>{proj.year}</span>
-                          </div>
-                          <div className="flex flex-wrap gap-2 mb-5">
-                            {proj.tags?.map(tag => (
-                              <span key={tag} className="text-[10px] font-mono text-[#FF8A3D] bg-[#FF8A3D]/10 px-2 py-1 rounded-md">{tag}</span>
+              <>
+                {/* --- FEATURED CAROUSEL --- */}
+                {featuredProjects.length > 0 && (
+                  <div className="mb-12 relative">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Star className="text-[#FF8A3D] w-4 h-4 fill-[#FF8A3D]" />
+                      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400">Featured Projects</span>
+                    </div>
+                    <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#0E1015] shadow-xl">
+                      <AnimatePresence mode="wait">
+                        {currentFeatured && (
+                          <motion.div
+                            key={currentFeatured.name}
+                            initial={{ opacity: 0, x: 60 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -60 }}
+                            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                            className="grid md:grid-cols-2 gap-0"
+                          >
+                            <div className="aspect-video md:aspect-auto bg-slate-900 relative">
+                              <ImageWithFallback
+                                src={currentFeatured.imageUrl || '/og-image.png'}
+                                alt={currentFeatured.name}
+                                className="object-cover w-full h-full"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-transparent to-transparent opacity-60 md:hidden" />
+                            </div>
+                            <div className="p-6 md:p-8 flex flex-col justify-center">
+                              <div className="flex items-center gap-2 mb-3">
+                                <span className="text-[10px] font-mono uppercase tracking-widest text-[#FF8A3D]">{currentFeatured.category}</span>
+                                <span className="w-1 h-1 rounded-full bg-white/20" />
+                                <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500">{currentFeatured.year}</span>
+                              </div>
+                              <h3 className="font-display text-xl md:text-2xl font-bold text-white mb-2">{currentFeatured.name}</h3>
+                              <p className="text-sm text-slate-400 leading-relaxed mb-4 line-clamp-3">{currentFeatured.description}</p>
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                {currentFeatured.tags?.slice(0, 3).map(tag => (
+                                  <span key={tag} className="text-[9px] font-mono text-[#FF8A3D] bg-[#FF8A3D]/10 px-2 py-0.5 rounded-md">{tag}</span>
+                                ))}
+                              </div>
+                              <button
+                                onClick={() => openProject(currentFeatured)}
+                                className="self-start px-5 py-2 rounded-lg bg-[#FF8A3D] text-black font-semibold text-sm hover:bg-[#ffa15e] transition-all flex items-center gap-2"
+                              >
+                                View Project <ArrowRight size={14} />
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* Navigation arrows */}
+                      {featuredProjects.length > 1 && (
+                        <>
+                          <button
+                            onClick={prevCarousel}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/80 hover:text-white hover:bg-[#FF8A3D] transition-all z-10"
+                          >
+                            <ChevronLeft size={20} />
+                          </button>
+                          <button
+                            onClick={nextCarousel}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/80 hover:text-white hover:bg-[#FF8A3D] transition-all z-10"
+                          >
+                            <ChevronRight size={20} />
+                          </button>
+                          {/* Dots */}
+                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                            {featuredProjects.map((_, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => goToCarouselSlide(idx)}
+                                className={`w-2 h-2 rounded-full transition-all ${idx === carouselIndex ? 'bg-[#FF8A3D] w-4' : 'bg-white/30 hover:bg-white/50'}`}
+                                aria-label={`Go to slide ${idx + 1}`}
+                              />
                             ))}
                           </div>
-                          <div className="flex items-center gap-3">
-                            {proj.repo && <a href={proj.repo} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="px-4 py-2 text-xs font-semibold bg-white/[0.04] border border-white/10 rounded-lg hover:bg-[#FF8A3D]/10 transition-colors">Repo</a>}
-                            {proj.live && <a href={proj.live} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="px-4 py-2 text-xs font-semibold bg-[#FF8A3D] text-black rounded-lg hover:bg-[#ffa15e] transition-colors">Live</a>}
-                            {!proj.repo && !proj.live && proj.link !== '#' && <a href={proj.link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="px-4 py-2 text-xs font-semibold bg-white/[0.06] rounded-lg hover:bg-[#FF8A3D]/20 transition-colors">View details</a>}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* --- PROJECT GRID (all projects or first 3) --- */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8">
+                  {(showAllProjects ? projects : projects.slice(0, 3)).map((proj, idx) => {
+                    const isLive = (proj.status || '').toLowerCase() === 'live';
+                    return (
+                      <Reveal key={`${proj.name}-${idx}`} delay={(idx % 3) * 0.08}>
+                        <motion.article
+                          whileHover={{ y: -6, boxShadow: '0 12px 40px rgba(0,0,0,0.6)' }}
+                          onClick={() => openProject(proj)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProject(proj); } }}
+                          className="group relative bg-[#101218] border border-white/10 rounded-2xl overflow-hidden shadow-lg cursor-pointer h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#FF8A3D]"
+                        >
+                          <div className="aspect-video bg-slate-900 relative overflow-hidden">
+                            <ImageWithFallback src={proj.imageUrl || '/og-image.png'} alt={proj.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-[#0B0C10]/10 to-transparent opacity-90" />
+                            <div className="absolute top-3 left-3 flex items-center gap-1.5 font-mono text-[9px] text-white/90 bg-black/50 backdrop-blur-md border border-white/10 px-2 py-1 rounded-full uppercase">
+                              <StatusDot ok={isLive} /> {proj.status}
+                            </div>
                           </div>
-                        </div>
-                      </motion.article>
-                    </Reveal>
-                  );
-                })}
-              </div>
+                          <div className="p-4 sm:p-5 md:p-5 lg:p-6">
+                            <div className="flex justify-between items-start gap-3 mb-2">
+                              <h4 className="font-display text-base md:text-lg font-bold text-white line-clamp-1">{proj.name}</h4>
+                              <span className="text-[9px] font-mono text-slate-500 border border-white/10 px-2 py-0.5 rounded-full uppercase shrink-0">{proj.category}</span>
+                            </div>
+                            <p className="text-slate-400 text-sm mb-4 line-clamp-3">{proj.description}</p>
+                            <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 mb-4">
+                              <span>{proj.year}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mb-5">
+                              {proj.tags?.map(tag => (
+                                <span key={tag} className="text-[10px] font-mono text-[#FF8A3D] bg-[#FF8A3D]/10 px-2 py-1 rounded-md">{tag}</span>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              {proj.repo && <a href={proj.repo} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="px-4 py-2 text-xs font-semibold bg-white/[0.04] border border-white/10 rounded-lg hover:bg-[#FF8A3D]/10 transition-colors">Repo</a>}
+                              {proj.live && <a href={proj.live} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="px-4 py-2 text-xs font-semibold bg-[#FF8A3D] text-black rounded-lg hover:bg-[#ffa15e] transition-colors">Live</a>}
+                              {!proj.repo && !proj.live && proj.link !== '#' && <a href={proj.link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="px-4 py-2 text-xs font-semibold bg-white/[0.06] rounded-lg hover:bg-[#FF8A3D]/20 transition-colors">View details</a>}
+                            </div>
+                          </div>
+                        </motion.article>
+                      </Reveal>
+                    );
+                  })}
+                </div>
+
+                {/* Toggle button */}
+                {projects.length > 3 && (
+                  <div className="mt-10 text-center">
+                    <button
+                      onClick={() => setShowAllProjects(!showAllProjects)}
+                      className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 bg-white/[0.02] font-mono text-sm text-slate-300 hover:border-[#FF8A3D]/50 hover:text-white hover:bg-[#FF8A3D]/5 transition-all active:scale-[0.97]"
+                    >
+                      {showAllProjects ? (
+                        <>Show less <ArrowUpRight size={16} className="group-hover:rotate-180 transition-transform" /></>
+                      ) : (
+                        <>View all projects <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
 
-        {/* PROJECT MODAL */}
+        {/* PROJECT MODAL (unchanged – you already have it) */}
         <AnimatePresence>
           {selectedProject && (
             <motion.div
@@ -778,31 +1006,78 @@ export default function Portfolio() {
 
                 <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-0">
                   <div className="p-4 sm:p-6 md:p-8 border-b lg:border-b-0 lg:border-r border-white/10">
-                    <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/20">
+                    <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/20 relative group">
                       <div className="relative aspect-[16/10] bg-slate-900">
-                        <ImageWithFallback src={activeImage} alt={selectedProject.name} className="w-full h-full object-cover" />
+                        <ImageWithFallback
+                          src={activeImage}
+                          alt={selectedProject.name}
+                          className="w-full h-full object-cover cursor-zoom-in"
+                          onClick={openLightbox}
+                        />
+                        <button
+                          onClick={openLightbox}
+                          className="absolute bottom-3 right-3 p-2 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-white/80 hover:text-white hover:bg-[#FF8A3D] transition-colors"
+                          aria-label="View full size"
+                        >
+                          <Maximize2 size={16} />
+                        </button>
                       </div>
                       {activeProjectImages.length > 1 && (
-                        <div className="p-4 md:p-5 border-t border-white/10 bg-white/[0.02]">
-                          <div className="flex items-center justify-between mb-3">
-                            <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">Gallery</p>
-                            <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">{selectedImageIndex + 1} / {activeProjectImages.length}</p>
+                        <>
+                          <button
+                            onClick={goToPrevImage}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/80 hover:text-white hover:bg-[#FF8A3D] transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            aria-label="Previous image"
+                          >
+                            <ChevronLeft size={20} />
+                          </button>
+                          <button
+                            onClick={goToNextImage}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/80 hover:text-white hover:bg-[#FF8A3D] transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            aria-label="Next image"
+                          >
+                            <ChevronRight size={20} />
+                          </button>
+                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-mono text-white/80">
+                            {selectedImageIndex + 1} / {activeProjectImages.length}
                           </div>
-                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 md:gap-3">
-                            {activeProjectImages.map((image, imageIndex) => (
-                              <button
-                                key={`${image}-${imageIndex}`}
-                                type="button"
-                                onClick={() => setSelectedImageIndex(imageIndex)}
-                                className={`relative aspect-video overflow-hidden rounded-lg border transition-all ${selectedImageIndex === imageIndex ? 'border-[#FF8A3D] ring-2 ring-[#FF8A3D]/30' : 'border-white/10 hover:border-[#FF8A3D]/40'}`}
-                              >
-                                <ImageWithFallback src={image} alt={`${selectedProject.name} gallery ${imageIndex + 1}`} className="w-full h-full object-cover" />
-                              </button>
-                            ))}
-                          </div>
-                        </div>
+                        </>
                       )}
                     </div>
+
+                    {activeProjectImages.length > 1 && (
+                      <div className="mt-4 md:mt-5">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">Gallery</p>
+                          <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">
+                            {selectedImageIndex + 1} / {activeProjectImages.length}
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 md:gap-3">
+                          {activeProjectImages.map((image, imageIndex) => (
+                            <button
+                              key={`${image}-${imageIndex}`}
+                              type="button"
+                              onClick={() => {
+                                stopAutoPlay();
+                                setSelectedImageIndex(imageIndex);
+                              }}
+                              className={`relative aspect-video overflow-hidden rounded-lg border transition-all ${
+                                selectedImageIndex === imageIndex
+                                  ? 'border-[#FF8A3D] ring-2 ring-[#FF8A3D]/30'
+                                  : 'border-white/10 hover:border-[#FF8A3D]/40'
+                              }`}
+                            >
+                              <ImageWithFallback
+                                src={image}
+                                alt={`${selectedProject.name} gallery ${imageIndex + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="mt-6 grid gap-4 sm:grid-cols-2">
                       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
@@ -889,7 +1164,68 @@ export default function Portfolio() {
           )}
         </AnimatePresence>
 
-        {/* EDUCATION + CONTACT */}
+        {/* LIGHTBOX (unchanged) */}
+        <AnimatePresence>
+          {lightboxOpen && selectedProject && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[80] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4"
+              onClick={closeLightbox}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="relative max-w-6xl w-full max-h-[90vh] bg-[#0E1015] rounded-2xl overflow-hidden border border-white/10"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-3 md:p-4 bg-gradient-to-b from-black/60 to-transparent">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/70 truncate">{selectedProject.name}</span>
+                  <button
+                    onClick={closeLightbox}
+                    className="p-2 rounded-full bg-white/10 hover:bg-[#FF8A3D] text-white hover:text-black transition-colors"
+                    aria-label="Close lightbox"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="relative flex items-center justify-center p-4 md:p-6 pt-16 md:pt-20">
+                  <ImageWithFallback
+                    src={activeImage}
+                    alt={selectedProject.name}
+                    className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                  />
+                </div>
+                {activeProjectImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); goToPrevImage(); }}
+                      className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/80 hover:text-white hover:bg-[#FF8A3D] transition-all"
+                      aria-label="Previous"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); goToNextImage(); }}
+                      className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/80 hover:text-white hover:bg-[#FF8A3D] transition-all"
+                      aria-label="Next"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[11px] font-mono text-white/80">
+                      {selectedImageIndex + 1} / {activeProjectImages.length}
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* EDUCATION + CONTACT (unchanged) */}
         <section className="grid lg:grid-cols-2 gap-10 sm:gap-12 md:gap-16 lg:gap-20 mb-16 sm:mb-20 md:mb-24 lg:mb-36">
           <div>
             <Reveal className="flex items-center gap-3 mb-6 md:mb-8 lg:mb-10">
@@ -952,11 +1288,84 @@ export default function Portfolio() {
         </section>
       </main>
 
-      <footer className="border-t border-white/5 py-8 md:py-10 bg-[#050609]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6 flex flex-col md:flex-row justify-between items-center gap-4 opacity-50 hover:opacity-100 transition-opacity">
-          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-center md:text-left">© 2026 Kavindu Bogahawatte — Backend &amp; Mobile Specialist</p>
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest">
-            <MapPin size={13} className="text-[#FF8A3D]" /> Colombo, Sri Lanka
+      {/* FOOTER (unchanged, from previous update) */}
+      <footer className="border-t border-white/5 bg-[#050609] pt-12 pb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-5 md:px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 pb-10 border-b border-white/5">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-[#FF8A3D] rounded-lg flex items-center justify-center text-black font-black text-sm font-display">K</div>
+                <span className="font-display font-bold tracking-tight text-white">Kavindu Bogahawatte</span>
+              </div>
+              <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
+                Backend &amp; Systems Engineer · Building scalable APIs and robust mobile backends.
+              </p>
+              <div className="flex gap-3 mt-4">
+                {socialLinks.map((link, i) => (
+                  <a
+                    key={i}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg bg-white/[0.03] border border-white/10 text-slate-400 hover:text-[#FF8A3D] hover:border-[#FF8A3D]/50 transition-all"
+                    aria-label={link.label}
+                  >
+                    {link.icon}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#FF8A3D] mb-3">Navigation</h4>
+              <ul className="space-y-2">
+                {NAV_LINKS.map((link) => (
+                  <li key={link.id}>
+                    <a
+                      href={`#${link.id}`}
+                      onClick={(e) => handleNavClick(e, link.id)}
+                      className="text-sm text-slate-400 hover:text-white transition-colors font-mono"
+                    >
+                      <span className="text-slate-600">{link.method}</span> {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#FF8A3D] mb-3">Core Stack</h4>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li>Node.js / Express</li>
+                <li>Java / Spring Boot</li>
+                <li>PHP / Laravel</li>
+                <li>Kotlin / Compose</li>
+                <li>Next.js / React</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#FF8A3D] mb-3">Connect</h4>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li className="flex items-center gap-2">
+                  <Mail size={14} className="text-[#FF8A3D]" />
+                  <a href="mailto:kavindumalshan2003@gmail.com" className="hover:text-white transition-colors">kavindumalshan2003@gmail.com</a>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Phone size={14} className="text-[#FF8A3D]" />
+                  <a href="tel:+94740890730" className="hover:text-white transition-colors">+94 74 089 0730</a>
+                </li>
+                <li className="flex items-center gap-2">
+                  <MapPin size={14} className="text-[#FF8A3D]" />
+                  <span>Colombo, Sri Lanka</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3 pt-6 text-[10px] font-mono uppercase tracking-[0.15em] text-slate-500">
+            <p>© {new Date().getFullYear()} Kavindu Bogahawatte - Backend &amp; Mobile Specialist</p>
+           
           </div>
         </div>
       </footer>
@@ -969,8 +1378,6 @@ export default function Portfolio() {
         .portfolio-root .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
         html { scroll-behavior: smooth; }
 
-        /* Fallback scroll offset for any anchor navigation that bypasses the
-           JS handler (e.g. a bookmarked #section link on first load). */
         section[id], div#contact { scroll-margin-top: var(--header-h, 96px); }
 
         @media (prefers-reduced-motion: reduce) {
