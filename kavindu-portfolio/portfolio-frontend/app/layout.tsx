@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Headset, Terminal } from "lucide-react"; 
+import "./globals.css"; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,25 +20,17 @@ export const metadata: Metadata = {
     default: "Kavindu Bogahawatte | Backend Engineer & System Architect",
     template: "%s | Kavindu Bogahawatte"
   },
-  description: "Official Portfolio of Kavindu Bogahawatte. Senior Backend Engineer & Mobile Specialist based in Colombo. Expert in Distributed Systems, Node.js, Kotlin, Microservices, and High-Throughput APIs.",
+  description: "Official Portfolio of Kavindu Bogahawatte. Backend Engineer & Mobile Specialist based in Colombo. Expert in Distributed Systems, Node.js, Kotlin, Microservices, and High-Throughput APIs.",
   
   keywords: [
-    // Identity Search
     "Kavindu Bogahawatte", 
     "Kavindu Malshan", 
     "Kavindu Nethvitha",
-    "Kavindu Bogahawatte Backend Engineer",
-    
-    // Core Technical Specializations (Backend & Architecture Focus)
     "Backend Systems Architect Sri Lanka",
     "Scalable API Developer Colombo",
     "Kotlin Android Specialist",
     "Node.js Microservices Architecture",
     "WhatsApp Business API Gateway Specialist",
-    "Distributed Systems Engineer",
-    "Database Optimization & Security",
-
-    // Institutional & Trust SEO
     "Mahanama College Software Engineer",
     "SLIIT Computer Science Alumnus"
   ],
@@ -78,11 +69,10 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
 
-  // --- BRANDED BACKEND / SERVER ARCHITECTURE ICONS ---
   icons: {
     icon: [
-      { url: "https://cdn-icons-png.flaticon.com/512/906/906343.png", sizes: "32x32", type: "image/png" }, // Server/Terminal icon
-      { url: "https://cdn-icons-png.flaticon.com/512/2165/2165061.png", sizes: "16x16", type: "image/png" }, // API/Code icon
+      { url: "https://cdn-icons-png.flaticon.com/512/906/906343.png", sizes: "32x32", type: "image/png" },
+      { url: "https://cdn-icons-png.flaticon.com/512/2165/2165061.png", sizes: "16x16", type: "image/png" },
     ],
     apple: [
       { url: "https://cdn-icons-png.flaticon.com/512/906/906343.png", sizes: "180x180", type: "image/png" },
@@ -91,7 +81,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0E1015",
+  themeColor: "#FAFAFA",
 };
 
 export default function RootLayout({
@@ -99,7 +89,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Rich JSON-LD Entity Markup for Search Crawlers
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -142,41 +131,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[#0E1015] text-[#E7E9EE] selection:bg-[#FF8A3D]/20 selection:text-[#FF8A3D] font-sans">
+      <body className="min-h-full flex flex-col bg-[#FAFAFA] text-slate-900 selection:bg-slate-900 selection:text-white font-sans">
         <main className="flex-grow">
           {children}
         </main>
-
-        {/* --- LIVE API / MONITORED SUPPORT WIDGET --- */}
-        <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-3">
-          {/* Response Chip / Live Status Seal */}
-          <div className="bg-[#0E1015]/90 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-full shadow-2xl flex items-center gap-2.5">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#33D17A] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#33D17A]"></span>
-            </span>
-            <span className="text-[11px] font-mono font-semibold tracking-wide text-slate-300 uppercase flex items-center gap-1.5">
-              API <span className="text-[#33D17A]">200 OK</span> • Node Active
-            </span>
-          </div>
-
-          {/* Interactive Action Hub */}
-          <a 
-            href="https://wa.me/94740890730" 
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Direct Engineer Connect"
-            className="group relative flex items-center justify-center w-14 h-14 bg-[#FF8A3D] rounded-2xl text-[#0E1015] shadow-[0_0_20px_rgba(255,138,61,0.35)] hover:shadow-[0_0_30px_rgba(255,138,61,0.5)] hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20"
-          >
-            <Headset size={24} className="group-hover:rotate-12 transition-transform duration-300" />
-            
-            {/* Hover Tooltip Response Chip */}
-            <span className="absolute right-16 bg-[#0E1015] text-[#E7E9EE] text-[11px] font-mono font-medium py-2 px-3.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap border border-white/10 shadow-xl pointer-events-none flex items-center gap-2">
-              <Terminal size={12} className="text-[#FF8A3D]" />
-              <span>POST /direct_connect</span>
-            </span>
-          </a>
-        </div>
       </body>
     </html>
   );
