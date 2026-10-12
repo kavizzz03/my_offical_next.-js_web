@@ -1,2240 +1,751 @@
 "use client";
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { motion, useReducedMotion, AnimatePresence, useSpring } from 'framer-motion';
-import {
-  Smartphone, Database, Server, Cpu, ShieldCheck,
-  ArrowRight, ArrowUpRight, Menu, X, Check, Copy,
-  Maximize2, Search, Terminal, Sparkles,
-  MessageSquare, Mail,
-  Clock, Zap, Activity, Code2, ChevronDown, Award,
-  Send, Play, Volume2, VolumeX, CheckCircle2,
-  Share2, ArrowDown, Radio
-} from 'lucide-react';
+import React, { useEffect, useRef, useState } from "react";
 
-/* ------------------------------------------------------------------ */
-/* Web Audio API Synthesizer (Micro-Interaction Sound Effects)         */
-/* ------------------------------------------------------------------ */
+/* ---------------------------------------------------------------- */
+/* Data (same shape your Node backend returns)                      */
+/* ---------------------------------------------------------------- */
 
-class SoundFX {
-  private ctx: AudioContext | null = null;
-  public enabled: boolean = false;
+const MAIL = "kavindumalshan2003@gmail.com";
+const API = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+// Your photos live in /public: profile.svg (hero illustration) and avatar.svg (round face illustration). Real photos are also in public as profile.jpg and avatar.jpg.
+const PHOTO = "/profile.svg";
+const AVATAR = "/avatar.svg";
 
-  private init() {
-    if (!this.ctx && typeof window !== 'undefined') {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (AudioCtx) {
-        this.ctx = new AudioCtx();
+interface Project { k: string; y: string; n: string; d: string; tags: string[]; pts: string[] }
+
+const P: Project[] = [
+  { k: "bc", y: "ASB Fashion, 2026", n: "A broadcast system for 200,000+ customers", d: "A communication platform that manages SMS, WhatsApp and email campaigns for the retailer's loyalty customers. Built to keep working well past 1 million.", tags: ["PHP", "MySQL", "Hutch SMS API", "Meta WhatsApp Business API", "cPanel"], pts: ["Customer segmentation and campaign scheduling.", "Message tracking and delivery reporting in one place.", "Architecture designed to scale beyond 1 million customers."] },
+  { k: "po", y: "ASB Fashion, 2026", n: "Purchasing orders, from request to quality check", d: "An internal system for creating purchase orders, approving them, receiving goods and checking quality. Built without a JavaScript framework.", tags: ["HTML5", "Tailwind CSS", "JavaScript", "PHP", "MySQL", "REST APIs"], pts: ["Approvals and goods receiving in one workflow.", "Plain HTML, CSS, PHP and vanilla JavaScript.", "MySQL database with a REST API layer."] },
+  { k: "web", y: "ASB Fashion, 2026", n: "The official ASB Fashion website", d: "The online home of one of Sri Lanka's leading fashion retailers, with product showcases, promotions, company information and online gift vouchers.", tags: ["React.js", "PHP", "MySQL", "CSS", "SEO", "cPanel"], pts: ["Responsive interface with SEO optimisation.", "Online gift voucher purchasing.", "Secure database integration and a performance-focused build."] },
+  { k: "fl", y: "University of Bedfordshire, 2026", n: "FloodMind: an early flood warning for the Kelani River", d: "My BSc research project. I prepared the datasets, trained XGBoost models to predict water levels and flood risk, and built a working prototype.", tags: ["Python", "XGBoost", "PHP REST API", "MySQL", "Arduino UNO", "Ultrasonic sensors"], pts: ["Python prediction pipeline for water level and flood risk.", "PHP REST APIs, a MySQL database and a web dashboard.", "Automated email alerts and an Arduino ultrasonic sensor prototype."] },
+  { k: "ph", y: "Personal project", n: "Brainana, a maths and logic game for Android", d: "A game built around interactive maths and logic challenges, with a modern Jetpack Compose interface.", tags: ["Kotlin", "Jetpack Compose", "Android SDK"], pts: ["Native Android UI built with Jetpack Compose.", "Interactive maths and logic challenges."] },
+  { k: "ap", y: "Personal project", n: "Arrow Food, a Node.js backend", d: "A backend-focused application covering REST API design and server-side application logic.", tags: ["Node.js", "Express.js", "REST API"], pts: ["Clean REST API design.", "Server-side logic built with Express.js."] },
+];
+
+const SKETCH = [
+  ["DownVid", "A video downloader", "React.js, Node.js, Express.js, Python, yt-dlp, FFmpeg", "--p1"],
+  ["AI Subtitle Pro", "Subtitles from audio and video with Whisper AI", "Python, Whisper AI, Node.js, React", "--p2"],
+  ["Hire Us", "Worker registration, ID verification and job tracking", "PHP, MySQL, Java, Hostinger", "--p3"],
+  ["KMD Sweet House", "A business site with product showcases and admin tools", "React.js, PHP, MySQL, Hostinger", "--p4"],
+  ["StatusBox", "An Android app for handling and saving status media", "Java, Kotlin, Android SDK", "--p1"],
+  ["MediCare", "A Java desktop app for patients, appointments and medicines", "Java, OOP, MySQL, SMTP", "--p2"],
+];
+
+const TOOLS: [string, string, string[]][] = [
+  ["Languages", "--p1", ["Java", "Kotlin", "JavaScript", "PHP", "Python", "C/C++"]],
+  ["Frontend", "--p3", ["HTML5", "CSS3", "Tailwind CSS", "React.js", "Next.js", "Responsive UI", "SEO"]],
+  ["Backend and integrations", "--p2", ["PHP REST APIs", "Node.js", "Express.js", "Webhooks", "Authentication", "Hutch SMS API", "Meta WhatsApp Business API"]],
+  ["Databases", "--p4", ["MySQL", "MSSQL", "MongoDB", "Firebase"]],
+  ["Mobile", "--p1", ["Android SDK", "Java / Kotlin", "Jetpack Compose", "Firebase"]],
+  ["AI, data and tools", "--p3", ["XGBoost", "Whisper AI", "Dataset preparation", "Git/GitHub", "cPanel", "Hostinger", "Postman", "FFmpeg", "Linux"]],
+];
+
+const STEPS: [string, string, string, string[]][] = [
+  ["May 2026 to now", "Associate Software Engineer", "ASB Fashion (Pvt) Ltd, IT Department", ["Turning business workflows into software, from requirements to deployment.", "Building the Purchasing Order Management System, the official website and ASB Loyal Vault, the loyalty platform.", "API integrations, database optimisation, troubleshooting and maintenance."]],
+  ["Nov 2025 to May 2026", "Software Engineering Intern", "ASB Fashion (Pvt) Ltd, IT Department", ["Microsoft SQL Server administration and server management.", "Built the Broadcast Management System and the Token Management System, and contributed to the Returns Management System."]],
+  ["2023 to 2026", "BSc (Hons) Software Engineering", "University of Bedfordshire, UK, with a Higher Diploma in IT at SLIIT City University, Colombo 03", []],
+  ["Earlier", "G.C.E. A/L Physical Science and O/L", "Mahanama College, Colombo 03", []],
+];
+
+const MARQUEE = ["PHP", "Node.js", "React", "Next.js", "Kotlin", "Jetpack Compose", "MySQL", "MSSQL", "Python", "XGBoost", "WhatsApp API", "REST", "Firebase", "Whisper AI"];
+const ORBIT = ["PHP", "React", "Kotlin", "Node", "MySQL", "Python"];
+const TYPED = ["reliable APIs.", "Jetpack Compose.", "WhatsApp automation.", "flood prediction.", "tidy databases."];
+const GREET = ["Hello!", "ආයුබෝවන්!", "வணக்கம்!", "Hi there!"];
+const SYM = ["</>", "{ }", "=>", ";", "01", "#", "()", "[]", "&&", "::"];
+const DOCK: [string, string, string][] = [
+  ["top", "Home", "M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"],
+  ["talent", "Skills", "M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"],
+  ["work", "Work", "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"],
+  ["path", "Path", "M12 3a9 9 0 100 18 9 9 0 000-18zM12 7v5l3 2"],
+  ["hello", "Contact", "M3 6h18v12H3zM3 7l9 7 9-7"],
+];
+const ACC: Record<string, string> = { bc: "#6C47FF", po: "#00A67E", web: "#FF5C8A", fl: "#1AA7EC", ph: "#F29A00", ap: "#8A5CF6" };
+
+/* ---------------------------------------------------------------- */
+/* Components                                                       */
+/* ---------------------------------------------------------------- */
+
+/* interactive node network behind the hero: nodes link up and chase the pointer */
+function Net() {
+  const ref = useRef<HTMLCanvasElement | null>(null);
+  useEffect(() => {
+    const cv = ref.current;
+    if (!cv || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const ctx = cv.getContext("2d")!;
+    let w = 0, h = 0, raf = 0, vis = true;
+    const m = { x: -999, y: -999 };
+    const nodes: { x: number; y: number; vx: number; vy: number }[] = [];
+    const size = () => {
+      const r = cv.getBoundingClientRect(); const d = Math.min(devicePixelRatio, 2);
+      w = r.width; h = r.height; cv.width = w * d; cv.height = h * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+      const n = w < 700 ? 34 : 70;
+      while (nodes.length < n) nodes.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4 });
+      nodes.length = n;
+    };
+    const mv = (e: PointerEvent) => { const r = cv.getBoundingClientRect(); m.x = e.clientX - r.left; m.y = e.clientY - r.top; };
+    const io = new IntersectionObserver(([e]) => { vis = e.isIntersecting; });
+    const draw = () => {
+      raf = requestAnimationFrame(draw);
+      if (!vis) return;
+      ctx.clearRect(0, 0, w, h);
+      for (const a of nodes) {
+        a.x += a.vx; a.y += a.vy;
+        if (a.x < 0 || a.x > w) a.vx *= -1; if (a.y < 0 || a.y > h) a.vy *= -1;
+        const dx = m.x - a.x, dy = m.y - a.y, dm = Math.hypot(dx, dy);
+        if (dm < 160) { a.x += dx * 0.012; a.y += dy * 0.012; }
+        ctx.fillStyle = "#6C47FF"; ctx.beginPath(); ctx.arc(a.x, a.y, 2.2, 0, 7); ctx.fill();
       }
-    }
-  }
-
-  playBlip(freq = 480, duration = 0.06) {
-    if (!this.enabled) return;
-    try {
-      this.init();
-      if (!this.ctx) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, this.ctx.currentTime + duration);
-      gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start();
-      osc.stop(this.ctx.currentTime + duration);
-    } catch {
-      // AudioContext fallback
-    }
-  }
-
-  playSuccess() {
-    if (!this.enabled) return;
-    try {
-      this.init();
-      if (!this.ctx) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
-      const now = this.ctx.currentTime;
-      [523.25, 659.25, 783.99].forEach((freq, idx) => {
-        if (!this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-        gain.gain.setValueAtTime(0.03, now + idx * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.15);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now + idx * 0.08);
-        osc.stop(now + idx * 0.08 + 0.15);
-      });
-    } catch {
-      // ignore
-    }
-  }
+      for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+        const d = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
+        if (d < 130) { ctx.strokeStyle = `rgba(108,71,255,${(1 - d / 130) * 0.28})`; ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke(); }
+      }
+    };
+    size(); io.observe(cv); draw();
+    addEventListener("resize", size); addEventListener("pointermove", mv, { passive: true });
+    return () => { cancelAnimationFrame(raf); io.disconnect(); removeEventListener("resize", size); removeEventListener("pointermove", mv); };
+  }, []);
+  return <canvas ref={ref} className="net" aria-hidden="true" />;
 }
 
-const sfx = new SoundFX();
+function Scramble({ t }: { t: string }) {
+  const [s, setS] = useState(t);
+  const id = useRef<ReturnType<typeof setInterval> | null>(null);
+  const run = () => {
+    if (id.current) clearInterval(id.current);
+    let i = 0;
+    id.current = setInterval(() => {
+      setS(t.split("").map((c, j) => (j < i ? c : "#@$%&*+?<>/"[Math.floor(Math.random() * 11)])).join(""));
+      i += 0.5;
+      if (i > t.length && id.current) { clearInterval(id.current); setS(t); }
+    }, 30);
+  };
+  useEffect(() => { const x = setTimeout(run, 1700); return () => { clearTimeout(x); if (id.current) clearInterval(id.current); }; }, []); // eslint-disable-line
+  return <span onPointerEnter={run} aria-label={t}>{s}</span>;
+}
 
-/* ------------------------------------------------------------------ */
-/* Helper Components & Icons                                          */
-/* ------------------------------------------------------------------ */
+/* headline words rise out of a mask, one after another */
+function Split({ t }: { t: string }) {
+  return <>{t.split(" ").map((w, i) => <span className="sw" key={i}><span style={{ transitionDelay: `${i * 80}ms` }}>{w}&nbsp;</span></span>)}</>;
+}
 
-function ImageWithFallback({
-  src,
-  alt,
-  className,
-  fallback = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200',
-  ...rest
-}: { src: string; alt: string; className?: string; fallback?: string } & React.ImgHTMLAttributes<HTMLImageElement>) {
-  const [hasError, setHasError] = useState(false);
+function Count({ n, plus }: { n: number; plus?: boolean }) {
+  const ref = useRef<HTMLElement | null>(null);
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return; io.disconnect();
+      const s = performance.now();
+      const f = (t: number) => { const p = Math.min((t - s) / 1500, 1); setV(Math.round(n * (1 - Math.pow(1 - p, 3)))); if (p < 1) requestAnimationFrame(f); };
+      requestAnimationFrame(f);
+    }, { threshold: 0.3 });
+    io.observe(el); return () => io.disconnect();
+  }, [n]);
+  const text = n >= 1_000_000 ? `${(v / 1_000_000).toFixed(v >= n ? 0 : 1)}M` : v.toLocaleString();
+  return <b ref={ref as React.RefObject<HTMLElement>}>{text}{plus ? "+" : ""}</b>;
+}
+
+/* animated illustration for each project */
+function Scene({ k }: { k: string }) {
+  const c = ACC[k] || ACC.bc;
+  const body = {
+    bc: (<><g stroke={c} strokeWidth="2" strokeDasharray="5 6" className="dash"><path d="M200 125L70 55M200 125L60 150M200 125L90 215M200 125L335 60M200 125L345 160M200 125L315 215" /></g>
+      {[[70, 55], [60, 150], [90, 215], [335, 60], [345, 160], [315, 215]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="11" fill="#fff" stroke={c} strokeWidth="3" className="pulse" style={{ animationDelay: `${i * 0.25}s` }} />)}
+      <rect x="165" y="75" width="70" height="100" rx="14" fill={c} /><rect x="175" y="88" width="50" height="10" rx="5" fill="#fff" /><rect x="175" y="106" width="36" height="10" rx="5" fill="#ffffffaa" /><circle cx="200" cy="148" r="10" fill="#C8F53C" /></>),
+    po: (<>{[0, 1, 2].map((i) => <g key={i} className="fl1" style={{ animationDelay: `${i * 0.3}s` }}><rect x="90" y={50 + i * 56} width="220" height="44" rx="12" fill="#fff" /><rect x="132" y={66 + i * 56} width={110 - i * 18} height="9" rx="4" fill="#14112B22" /><circle cx="112" cy={72 + i * 56} r="12" fill={c} /><path d={`M106 ${72 + i * 56}l5 5 9-10`} stroke="#fff" strokeWidth="3" fill="none" className="tick" style={{ animationDelay: `${i * 0.5}s` }} /></g>)}</>),
+    web: (<><rect x="50" y="36" width="300" height="180" rx="16" fill="#fff" /><rect x="50" y="36" width="300" height="28" rx="14" fill="#14112B" /><rect x="68" y="82" width="86" height="112" rx="12" fill="#FFD3E0" className="fl1" /><rect x="164" y="82" width="86" height="112" rx="12" fill="#FFF0B8" className="fl1" style={{ animationDelay: ".3s" }} /><rect x="260" y="82" width="74" height="112" rx="12" fill="#DCD5FF" className="fl1" style={{ animationDelay: ".6s" }} /><rect x="272" y="160" width="50" height="22" rx="11" fill={c} /><path d="M300 120l0 30 8-8 6 14 5-2-6-14 11 0z" fill="#14112B" className="cursor" /></>),
+    fl: (<><path d="M0 150Q50 122 100 150T200 150T300 150T400 150V250H0z" fill={c} opacity=".35" className="wave" /><path d="M0 182Q50 154 100 182T200 182T300 182T400 182V250H0z" fill={c} opacity=".7" className="wave w2" /><rect x="190" y="40" width="20" height="128" rx="6" fill="#14112B" /><rect x="170" y="40" width="60" height="28" rx="9" fill="#C8F53C" /><g stroke="#14112B" strokeWidth="3" fill="none" strokeLinecap="round" className="pulse"><path d="M244 52q16-12 32 0M254 40q22-18 44 0" /></g></>),
+    ph: (<><rect x="150" y="18" width="100" height="214" rx="24" fill="#14112B" /><rect x="158" y="34" width="84" height="182" rx="14" fill="#fff" /><text x="200" y="76" fontSize="20" fontWeight="800" textAnchor="middle" fill={c}>7 × 8</text>{[[168, 94, "#FFD3E0"], [202, 94, "#C8F53C"], [168, 128, "#FFF0B8"], [202, 128, "#CFEAFF"]].map(([x, y, f], i) => <rect key={i} x={x as number} y={y as number} width="30" height="30" rx="9" fill={f as string} className="fl1" style={{ animationDelay: `${i * 0.2}s` }} />)}<rect x="168" y="178" width="64" height="24" rx="12" fill={c} /></>),
+    ap: (<><g stroke={c} strokeWidth="2.5" opacity=".6" className="dash"><path d="M200 125L90 60M200 125L90 190M200 125L310 60M200 125L310 190" /></g><circle cx="200" cy="125" r="34" fill="#14112B" /><text x="200" y="131" fontSize="16" fontWeight="800" textAnchor="middle" fill="#fff">API</text>{[[90, 60], [90, 190], [310, 60], [310, 190]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="20" fill={i % 2 ? "#fff" : c} className="pulse" style={{ animationDelay: `${i * 0.3}s` }} />)}</>),
+  } as Record<string, React.ReactNode>;
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={hasError ? fallback : (src || fallback)}
-      alt={alt}
-      className={className}
-      loading="lazy"
-      onError={() => setHasError(true)}
-      {...rest}
-    />
+    <svg viewBox="0 0 400 250" role="img" aria-label="Animated illustration of the project" className="scene">
+      <rect width="400" height="250" fill={c} opacity=".14" />
+      {body[k] || body.bc}
+    </svg>
   );
 }
 
-const GithubIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.28 1.15-.28 2.35 0 3.5-.73 1.02-1.08 2.25-1 3.5 0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-    <path d="M9 18c-4.51 2-5-2-7-2" />
-  </svg>
-);
-
-const LinkedinIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-    <rect width="4" height="12" x="2" y="9" />
-    <circle cx="4" cy="4" r="2" />
-  </svg>
-);
-
-const WhatsAppIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-  </svg>
-);
-
-/* ------------------------------------------------------------------ */
-/* Data Structures & Content                                          */
-/* ------------------------------------------------------------------ */
-
-interface Project {
-  id: string;
-  name: string;
-  tagline: string;
-  description: string;
-  imageUrl: string;
-  images?: string[];
-  tags: string[];
-  category: 'Backend System' | 'Enterprise Platform' | 'Mobile App' | 'AI & IoT' | 'Full-Stack';
-  year: string;
-  status: 'Production Live' | 'Completed Research' | 'Active Deployment';
-  client: string;
-  metrics?: string;
-  architecturePoints: string[];
-  codePreview?: string;
-  liveUrl?: string;
-  repoUrl?: string;
-}
-
-const ALL_PROJECTS: Project[] = [
-  {
-    id: 'asb-broadcast',
-    name: 'ASB Broadcast Management System',
-    tagline: 'High-throughput multichannel marketing & notification engine',
-    description: 'Enterprise communication gateway delivering personalized SMS, Meta WhatsApp Cloud API messages, and email campaigns to over 200,000+ active loyalty customers.',
-    imageUrl: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1200',
-    tags: ['PHP', 'MySQL', 'Hutch SMS API', 'Meta WhatsApp API', 'Redis Queue', 'cPanel'],
-    category: 'Backend System',
-    year: '2026',
-    status: 'Production Live',
-    client: 'ASB Fashion (Pvt) Ltd',
-    metrics: '200,000+ Active Customers • Scaled to 1M Capacity',
-    architecturePoints: [
-      'Engineered asynchronous background job queues handling rate-limited carrier dispatching without blocking UI requests.',
-      'Direct integration with Meta WhatsApp Graph Cloud API & Hutch Telecom SMS gateways with instant webhook delivery receipts.',
-      'Comprehensive customer segmentation filters (purchase history, loyalty tier, demographic, city).',
-      'Real-time delivery telemetry, bounce rate tracking, and automated failure retry pipelines.'
-    ],
-    codePreview: `// High-concurrency broadcast queue worker
-function dispatchBroadcastBatch(PDO $db, array $campaign): array {
-    $stmt = $db->prepare("SELECT id, phone_number, customer_name FROM loyalty_customers WHERE tier = ? LIMIT 500");
-    $stmt->execute([$campaign['target_tier']]);
-    $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    $results = ['success' => 0, 'queued' => 0];
-    foreach ($recipients as $recipient) {
-        $payload = formatWhatsAppTemplate($campaign['template_name'], $recipient);
-        MetaCloudGateway::enqueueMessage($payload, priority: 'high');
-        $results['queued']++;
-    }
-    return $results;
-}`
-  },
-  {
-    id: 'asb-purchasing',
-    name: 'ASB Purchasing Order Management System',
-    tagline: 'Internal enterprise procurement & inventory quality pipeline',
-    description: 'Comprehensive workflow automation platform managing end-to-end purchase order creation, multi-level management approvals, goods receiving, and stringent quality checking.',
-    imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1200',
-    tags: ['Vanilla JS', 'PHP REST APIs', 'MySQL', 'Tailwind CSS', 'Role RBAC'],
-    category: 'Enterprise Platform',
-    year: '2026',
-    status: 'Production Live',
-    client: 'ASB Fashion (Pvt) Ltd',
-    metrics: 'Zero discrepancies across 15+ retail branch channels',
-    architecturePoints: [
-      'Role-based Access Control (RBAC) separating Store Keepers, Department Heads, Finance Directors, and Quality Inspectors.',
-      'ACID transactional database schema ensuring zero stock discrepancies between ordered, received, and approved goods.',
-      'Live barcode/SKU verification module during initial warehouse goods unloading.',
-      'Automated PDF invoice/PO generation and email dispatching to suppliers upon executive sign-off.'
-    ]
-  },
-  {
-    id: 'asb-official-web',
-    name: 'ASB Fashion Official Web Platform',
-    tagline: 'Modern digital storefront & online gift voucher purchasing hub',
-    description: 'Official consumer portal for one of Sri Lanka’s premier fashion retail chains, featuring interactive collections, store locators, promotions, and instant online voucher sales.',
-    imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200',
-    tags: ['React.js', 'PHP Backend', 'MySQL', 'Payment Gateways', 'SEO Schema'],
-    category: 'Enterprise Platform',
-    year: '2026',
-    status: 'Production Live',
-    client: 'ASB Fashion (Pvt) Ltd',
-    metrics: '99.9% Uptime • Sub-second page loads • High SEO rank',
-    architecturePoints: [
-      'Dynamic product showcases synchronized with internal inventory feeds.',
-      'Secure digital voucher issuance system with unique cryptographic QR validation codes for in-store redemption.',
-      'Advanced technical SEO structuring with schema.org rich snippets, breadcrumbs, and OpenGraph optimization.',
-      'High-conversion responsive design optimized for Sri Lankan mobile shoppers.'
-    ]
-  },
-  {
-    id: 'floodmind-iot',
-    name: 'FloodMind - Kelani River Early Flood Warning',
-    tagline: 'Machine learning hydrological forecasting & IoT sensor network',
-    description: 'BSc Research project featuring machine learning water-level prediction models, solar-powered IoT ultrasonic hardware stations, and automated real-time alert dispatching.',
-    imageUrl: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?auto=format&fit=crop&q=80&w=1200',
-    tags: ['Python', 'XGBoost', 'PHP REST API', 'Arduino UNO', 'Ultrasonic Sensors', 'IoT'],
-    category: 'AI & IoT',
-    year: '2026',
-    status: 'Completed Research',
-    client: 'University of Bedfordshire (UK Research)',
-    metrics: '94.6% Prediction Accuracy • 30-min Early Warning Lead Time',
-    architecturePoints: [
-      'Trained XGBoost regression models on historical rainfall and river discharge data along Kelani River basin.',
-      'Deployed Arduino hardware stations transmitting ultrasonic water-level readings via cellular REST APIs.',
-      'Multi-tier automated alert system triggering immediate SMS and email warnings to disaster response officials upon threshold breaches.',
-      'Interactive dashboard for hydrological researchers with live telemetry charts and predictive flood curves.'
-    ],
-    codePreview: `import xgboost as xgb
-import numpy as np
-
-def predict_flood_risk(sensor_telemetry: dict, model_path: str = "models/kelani_xgboost.json"):
-    model = xgb.Booster()
-    model.load_model(model_path)
-    
-    features = np.array([[
-        sensor_telemetry["water_level_cm"],
-        sensor_telemetry["rainfall_rate_mm_hr"],
-        sensor_telemetry["delta_rate_15m"],
-        sensor_telemetry["upstream_inflow"]
-    ]])
-    
-    dmatrix = xgb.DMatrix(features)
-    risk_prob = model.predict(dmatrix)[0]
-    return {"risk_score": float(risk_prob), "alert_level": "CRITICAL" if risk_prob > 0.85 else "NORMAL"}`
-  },
-  {
-    id: 'brainana-game',
-    name: 'Brainana - Math & Logic Android Game',
-    tagline: 'Native Kotlin Android game powered by Jetpack Compose',
-    description: 'Engaging native Android game focused on interactive mathematics puzzles, algorithmic challenges, dynamic difficulty scaling, and fluid 60FPS UI animations.',
-    imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200',
-    tags: ['Kotlin', 'Jetpack Compose', 'Android SDK', 'Room DB', 'Coroutines'],
-    category: 'Mobile App',
-    year: '2025',
-    status: 'Production Live',
-    client: 'Independent Release',
-    metrics: '60 FPS Smooth Frame Budget • Zero Memory Leaks',
-    architecturePoints: [
-      'Engineered with modern Jetpack Compose declarative UI and Kotlin Coroutines for seamless asynchronous puzzle generation.',
-      'Clean MVVM (Model-View-ViewModel) architecture ensuring strict separation between game logic and render pipeline.',
-      'Local persistence with Android Room Database for offline gameplay, high scores, and achievement unlocks.',
-      'Optimized memory footprint ensuring battery-efficient execution across budget to flagship Android devices.'
-    ]
-  },
-  {
-    id: 'arrow-food-api',
-    name: 'Arrow Food - Scalable Backend API Platform',
-    tagline: 'High-performance microservices architecture & REST API',
-    description: 'Enterprise backend designed for food delivery logistics, featuring JWT token authentication, order state machines, driver matching algorithms, and MongoDB caching.',
-    imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200',
-    tags: ['Node.js', 'Express.js', 'MongoDB', 'JWT Auth', 'REST API'],
-    category: 'Backend System',
-    year: '2025',
-    status: 'Production Live',
-    client: 'Production System',
-    metrics: 'Sub-25ms Endpoint Response Times • Robust Schema Validation',
-    architecturePoints: [
-      'Modular route clustering with Express.js middlewares for authentication, rate-limiting, and error interception.',
-      'Structured MongoDB schema with geospatial indexing for fast nearby restaurant & courier queries.',
-      'Secure password hashing with Argon2 and stateless JWT session management.',
-      'Comprehensive Postman test suites and Swagger/OpenAPI documentation.'
-    ]
-  },
-  {
-    id: 'downvid-transcoder',
-    name: 'DownVid - Server-Side Media Transcoder',
-    tagline: 'High-speed media processing engine & streaming utility',
-    description: 'Full-stack utility platform that handles video/audio stream extraction, multi-format transcoding, and optimized downloading using yt-dlp and FFmpeg server instances.',
-    imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200',
-    tags: ['React.js', 'Node.js', 'Python', 'yt-dlp', 'FFmpeg', 'WebSocket'],
-    category: 'Full-Stack',
-    year: '2025',
-    status: 'Production Live',
-    client: 'Utility Software',
-    metrics: 'Real-time WebSocket Progress Transcoding Pipeline',
-    architecturePoints: [
-      'Hybrid backend orchestrating Node.js API servers with Python worker child processes.',
-      'FFmpeg streaming pipe converting heavy video streams directly to client buffers to save disk I/O.',
-      'WebSocket connection providing live byte-level download & conversion percentage updates to the user.'
-    ]
-  },
-  {
-    id: 'ai-subtitle-pro',
-    name: 'AI Subtitle Pro - Automated Transcription',
-    tagline: 'Speech-to-text pipeline powered by OpenAI Whisper AI',
-    description: 'AI-powered media engine that automatically transcribes spoken audio into synchronized subtitles (.SRT, .VTT) with millisecond-accurate timestamping.',
-    imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=1200',
-    tags: ['Python', 'Whisper AI', 'Node.js', 'React', 'Audio Processing'],
-    category: 'AI & IoT',
-    year: '2025',
-    status: 'Production Live',
-    client: 'AI Utility Platform',
-    metrics: '99% Word Recognition Accuracy across multiple accents',
-    architecturePoints: [
-      'Audio normalization and frequency filtering preprocessing with FFmpeg before neural model ingestion.',
-      'Whisper AI speech model inference wrapper with configurable beam search parameters.',
-      'Automated export into industry standard subtitle formats with custom styling options.'
-    ]
-  },
-  {
-    id: 'hire-us-platform',
-    name: 'Hire Us - Verified Worker & Job Platform',
-    tagline: 'Local service marketplace with national ID verification',
-    description: 'Two-sided labor marketplace connecting skilled tradespeople with homeowners, featuring KYC verification, automated job matching, escrow tracking, and SMS alerts.',
-    imageUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1200',
-    tags: ['PHP', 'MySQL', 'Java', 'Hostinger', 'SMS Notifications'],
-    category: 'Enterprise Platform',
-    year: '2025',
-    status: 'Production Live',
-    client: 'Commercial Platform',
-    metrics: 'KYC identity approval in under 5 minutes',
-    architecturePoints: [
-      'Secure document upload and identity verification workflow with admin approval dashboard.',
-      'Real-time job applicant dispatching and automated SMS alert notifications to workers.',
-      'Rating & review algorithms that protect client safety and showcase top-rated workers.'
-    ]
-  },
-  {
-    id: 'statusbox-android',
-    name: 'StatusBox - Android Media Vault',
-    tagline: 'Native Android storage & media management engine',
-    description: 'Lightweight Android application designed for organizing, previewing, and securing ephemeral media assets with optimized Android Storage Access Framework (SAF).',
-    imageUrl: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=1200',
-    tags: ['Java', 'Kotlin', 'Android SDK', 'SAF Storage', 'Glide'],
-    category: 'Mobile App',
-    year: '2025',
-    status: 'Production Live',
-    client: 'Mobile Utility',
-    metrics: '100% Android Scoped Storage Compliant (API 34+)',
-    architecturePoints: [
-      'Built strictly adhering to Android Scoped Storage guidelines for privacy and permission handling.',
-      'High-performance thumbnail caching utilizing Glide and coroutine background disk scanners.'
-    ]
-  },
-  {
-    id: 'asb-loyal-vault',
-    name: 'ASB Loyal Vault - Loyalty & Rewards Engine',
-    tagline: 'Real-time retail points & promotional reward calculation',
-    description: 'High-availability backend service running transactional point calculations, tier advancements, and voucher issuance for retail checkout POS terminals.',
-    imageUrl: 'https://images.unsplash.com/photo-1556742049-0a67e5572263?auto=format&fit=crop&q=80&w=1200',
-    tags: ['PHP', 'MySQL', 'REST APIs', 'POS Integration', 'Redis'],
-    category: 'Backend System',
-    year: '2026',
-    status: 'Production Live',
-    client: 'ASB Fashion (Pvt) Ltd',
-    metrics: 'Real-time calculations at POS checkout in < 40ms',
-    architecturePoints: [
-      'Atomic SQL transactions ensuring rewards and points are instantly credited and non-duplicable.',
-      'Automated SMS notifications dispatched to shoppers immediately after in-store billing.'
-    ]
-  },
-  {
-    id: 'multi-carrier-sms',
-    name: 'Multi-Carrier SMS Gateway Dispatcher',
-    tagline: 'Fault-tolerant telecom routing engine with failover',
-    description: 'Distributed microservice that balances and dispatches high-volume SMS messages across Hutch, Dialog, and Mobitel telecom APIs with automatic failover.',
-    imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=1200',
-    tags: ['Node.js', 'Express', 'Redis BullMQ', 'Telecom Gateways'],
-    category: 'Backend System',
-    year: '2025',
-    status: 'Production Live',
-    client: 'Telecom Infrastructure',
-    metrics: '99.99% Message Delivery Success Rate via Fallback',
-    architecturePoints: [
-      'Intelligent health check monitoring on carrier API endpoints.',
-      'Automatic routing rerouting if primary telecom provider experiences latency spikes or outages.'
-    ]
-  }
-];
-
-const CODE_SNIPPETS = [
-  {
-    id: 'broadcast-worker',
-    title: 'BroadcastWorker.php',
-    lang: 'php',
-    domain: 'High-Throughput Campaign Engine',
-    desc: 'Asynchronous campaign batch processor with Meta WhatsApp Cloud API rate limiting and webhook confirmation.',
-    simulatedOutput: '✓ Batch #4092 Initialized\n✓ Acquired 500 queue locks from MySQL\n✓ Meta Cloud Gateway dispatched (200 OK)\n✓ Telemetry: 500/500 sent in 1.24s (0 failures)',
-    code: `<?php
-declare(strict_types=1);
-
-namespace App\\Services\\Broadcast;
-
-use App\\Infrastructure\\Database\\ConnectionPool;
-use App\\Integrations\\Meta\\WhatsAppCloudClient;
-
-final class BroadcastCampaignWorker
-{
-    public function __construct(
-        private readonly ConnectionPool $dbPool,
-        private readonly WhatsAppCloudClient $whatsapp
-    ) {}
-
-    public function processBatch(int $campaignId, int $batchSize = 250): BatchResult
-    {
-        $pdo = $this->dbPool->acquire();
-        $stmt = $pdo->prepare("
-            SELECT queue_id, phone_number, template_payload 
-            FROM broadcast_queue 
-            WHERE campaign_id = :id AND status = 'PENDING' 
-            LIMIT :limit FOR UPDATE SKIP LOCKED
-        ");
-        $stmt->execute(['id' => $campaignId, 'limit' => $batchSize]);
-        $jobs = $stmt->fetchAll();
-
-        $dispatched = 0;
-        foreach ($jobs as $job) {
-            $response = $this->whatsapp->sendTemplate(
-                to: $job['phone_number'],
-                payload: json_decode($job['template_payload'], true)
-            );
-            
-            if ($response->isSuccess()) {
-                $this->markCompleted($pdo, $job['queue_id'], $response->getMessageId());
-                $dispatched++;
-            }
-        }
-        return new BatchResult(total: count($jobs), dispatched: $dispatched);
-    }
-}`
-  },
-  {
-    id: 'order-pipeline',
-    title: 'PurchaseOrderPipeline.ts',
-    lang: 'typescript',
-    domain: 'Enterprise Transaction Logic',
-    desc: 'ACID transaction handling for multi-tier purchase order approvals and quality assurance verification.',
-    simulatedOutput: '✓ Order PO-2026-889 Loaded\n✓ QA Pass: 1,200 units | Rejected: 0 units\n✓ Stock allocated to Central Hub #1\n✓ Audit record committed with cryptographic sign-off',
-    code: `import { DatabaseTransaction, StockManager, AuditLogger } from '@/core/enterprise';
-
-export interface QualityApprovalInput {
-  orderId: string;
-  inspectorId: string;
-  passedQuantity: number;
-  rejectedQuantity: number;
-  rejectionReason?: string;
-}
-
-export async function processQualityCheck(
-  input: QualityApprovalInput,
-  tx: DatabaseTransaction
-): Promise<{ status: 'APPROVED' | 'PARTIAL' | 'REJECTED'; receivedBatchId: string }> {
-  const order = await tx.purchaseOrders.findById(input.orderId);
-  if (!order || order.status !== 'PENDING_QA') {
-    throw new Error('Invalid order state for quality verification.');
-  }
-
-  const isFullPass = input.rejectedQuantity === 0 && input.passedQuantity === order.expectedQuantity;
-  const newStatus = isFullPass ? 'APPROVED' : (input.passedQuantity > 0 ? 'PARTIAL' : 'REJECTED');
-
-  // Atomic warehouse inventory allocation
-  const batch = await StockManager.allocateReceivedStock(tx, {
-    sku: order.sku,
-    acceptedQuantity: input.passedQuantity,
-    warehouseId: order.destinationWarehouseId
-  });
-
-  await AuditLogger.record(tx, {
-    action: 'QUALITY_CHECK_COMPLETED',
-    userId: input.inspectorId,
-    orderId: input.orderId,
-    details: { passed: input.passedQuantity, rejected: input.rejectedQuantity }
-  });
-
-  return { status: newStatus, receivedBatchId: batch.id };
-}`
-  },
-  {
-    id: 'flood-model',
-    title: 'FloodPredictor.py',
-    lang: 'python',
-    domain: 'AI & Hydrological Telemetry',
-    desc: 'Real-time hydrological inference stream integrating ultrasonic IoT sensor readings with XGBoost prediction models.',
-    simulatedOutput: '✓ Telemetry: Station #KR-04 (Water Level: 4.82m, Rain: 34mm/hr)\n✓ XGBoost Inference computed in 8.4ms\n✓ Risk Probability: 0.89 (CRITICAL)\n✓ Automated SMS alert dispatched to Disaster Management Center',
-    code: `import numpy as np
-import xgboost as xgb
-from dataclasses import dataclass
-from typing import Dict, Any
-
-@dataclass
-class SensorReading:
-    station_id: str
-    water_level_m: float
-    rainfall_1h_mm: float
-    discharge_rate_m3s: float
-
-class RiverFloodPredictor:
-    def __init__(self, model_file: str):
-        self.model = xgb.Booster()
-        self.model.load_model(model_file)
-        self.threshold_critical = 0.82
-
-    def evaluate_telemetry(self, sensor: SensorReading) -> Dict[str, Any]:
-        features = np.array([[
-            sensor.water_level_m,
-            sensor.rainfall_1h_mm,
-            sensor.discharge_rate_m3s,
-            (sensor.water_level_m * sensor.rainfall_1h_mm) # Interaction term
-        ]])
-        
-        dmatrix = xgb.DMatrix(features)
-        risk_probability = float(self.model.predict(dmatrix)[0])
-        
-        is_critical = risk_probability >= self.threshold_critical
-        return {
-            "station": sensor.station_id,
-            "flood_risk_score": round(risk_probability * 100, 2),
-            "threat_level": "RED_ALERT" if is_critical else "NORMAL",
-            "dispatch_sms": is_critical
-        }`
-  },
-  {
-    id: 'compose-game',
-    title: 'GameEngineState.kt',
-    lang: 'kotlin',
-    domain: 'Android Native UI Engine',
-    desc: 'State hoisting and 60FPS reactive game loop optimization using Jetpack Compose and Kotlin StateFlow.',
-    simulatedOutput: '✓ GameLoop initialized (Target: 60 FPS)\n✓ Frame Budget: 16.6ms | Actual: 4.2ms\n✓ State hoisted to ViewModel\n✓ Room database score cache synchronized',
-    code: `package com.kavindu.brainana.engine
-
-import androidx.compose.runtime.Immutable
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-
-@Immutable
-data class PuzzleState(
-    val currentScore: Int = 0,
-    val activeChallenge: MathChallenge,
-    val timeRemainingSec: Int = 30,
-    val streakCount: Int = 0,
-    val isGameOver: Boolean = false
-)
-
-class BrainanaGameViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(PuzzleState(activeChallenge = generateChallenge(1)))
-    val uiState: StateFlow<PuzzleState> = _uiState.asStateFlow()
-
-    fun submitAnswer(userAnswer: Int) {
-        val current = _uiState.value
-        val isCorrect = current.activeChallenge.expectedAnswer == userAnswer
-
-        _uiState.update { state ->
-            if (isCorrect) {
-                state.copy(
-                    currentScore = state.currentScore + (100 * (state.streakCount + 1)),
-                    streakCount = state.streakCount + 1,
-                    activeChallenge = generateChallenge(level = (state.currentScore / 500) + 1)
-                )
-            } else {
-                state.copy(streakCount = 0)
-            }
-        }
-    }
-}`
-  }
-];
-
-const FAQS = [
-  {
-    q: "How do you architect backend systems to scale for 200,000+ active customers without downtime?",
-    a: "I decouple user-facing HTTP endpoints from background processing using asynchronous queue pipelines (like Redis or database-backed job tables with row-level locks). This prevents external rate limits (such as WhatsApp/SMS gateway quotas) from stalling customer requests. Database schemas are indexed on query bottlenecks, transactions are isolated with strict ACID compliance, and repetitive static/session queries are cached."
-  },
-  {
-    q: "What is your experience with Meta WhatsApp Business Cloud API & Telecom SMS gateways?",
-    a: "I have built production-grade campaign management platforms integrating Meta Graph Cloud APIs, Hutch SMS APIs, and Dialog gateways. My implementations handle automated webhook receipt verification, template variable substitution, dynamic batching, bounce detection, and automatic carrier failover routing."
-  },
-  {
-    q: "Do you build complete native Android mobile applications from scratch?",
-    a: "Yes. I develop native Android apps using Kotlin, Java, and modern Jetpack Compose. I follow clean MVVM/MVI architectures, integrate Room Database for local offline persistence, handle Coroutines for smooth asynchronous tasks, and optimize frame budgets to ensure flawless 60FPS performance."
-  },
-  {
-    q: "How do you approach database schema design and high-integrity workflows like Purchasing Orders?",
-    a: "Enterprise operations like Purchasing Order Management and Loyalty Points require zero margin for data inconsistency. I design relational schemas (MySQL/PostgreSQL) with foreign key constraints, explicit transaction boundaries (`BEGIN TRANSACTION` / `COMMIT`), audit logs for every state transition, and strict Role-Based Access Control (RBAC)."
-  },
-  {
-    q: "What is your availability for full-time engineering roles, contracts, or consultations?",
-    a: "I am actively available for software engineering roles, backend architectural consulting, and full-stack/mobile development contracts. Feel free to contact me via email (kavindumalshan2003@gmail.com) or WhatsApp (+94 74 089 0730)."
-  }
-];
-
-/* ------------------------------------------------------------------ */
-/* Main Portfolio Component                                           */
-/* ------------------------------------------------------------------ */
+/* ---------------------------------------------------------------- */
+/* Page                                                             */
+/* ---------------------------------------------------------------- */
 
 export default function Portfolio() {
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'home' | 'projects-page'>('home');
-  const [projectDisplayMode, setProjectDisplayMode] = useState<'list' | 'grid'>('list');
-  const [hoveredProject, setHoveredProject] = useState<Project | null>(null);
-  const [activeCategory, setActiveCategory] = useState<string>('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCodeSnippet, setActiveCodeSnippet] = useState(0);
-  const [isSimulatingCode, setIsSimulatingCode] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
-  const [copiedEmail, setCopiedEmail] = useState(false);
-  const [navOpen, setNavOpen] = useState(false);
-  const [contactModalOpen, setContactModalOpen] = useState(false);
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-  const [currentTime, setCurrentTime] = useState('');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [active, setActive] = useState<number | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [typed, setTyped] = useState("");
+  const [menu, setMenu] = useState(false);
+  const [cmd, setCmd] = useState(false);
+  const [q, setQ] = useState("");
+  const [photoOk, setPhotoOk] = useState(true);
+  const [gi, setGi] = useState(0);
+  const [sec, setSec] = useState("top");
+  const dlg = useRef<HTMLDialogElement | null>(null);
+  const cur = useRef<HTMLDivElement | null>(null);
+  const hs = useRef<HTMLDivElement | null>(null);
+  const track = useRef<HTMLDivElement | null>(null);
 
-  // Live traffic simulation state
-  const [simulatedRequests, setSimulatedRequests] = useState(14820);
-  const [isSimulatingTraffic, setIsSimulatingTraffic] = useState(false);
-  const [pipelineStep, setPipelineStep] = useState<number | null>(null);
+  const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(null), 2200); };
+  const burst = () => {
+    const cols = ["#6C47FF", "#C8F53C", "#FF7AB6", "#FFD34D", "#1AA7EC"];
+    const x = innerWidth / 2, y = innerHeight * 0.62;
+    for (let i = 0; i < 30; i++) {
+      const el = document.createElement("i"); el.className = "cf";
+      el.style.cssText = `left:${x}px;top:${y}px;background:${cols[i % 5]}`;
+      document.body.appendChild(el);
+      const a = Math.random() * Math.PI * 2, d = 90 + Math.random() * 170;
+      el.animate([{ transform: "translate(0,0) rotate(0)", opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d + 120}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }], { duration: 900 + Math.random() * 500, easing: "cubic-bezier(.2,.8,.3,1)" }).onfinish = () => el.remove();
+    }
+  };
+  const copyMail = () => { try { navigator.clipboard.writeText(MAIL); } catch { /* ignore */ } burst(); showToast("Email copied"); };
 
-  // Form state
-  const [contactName, setContactName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactMessage, setContactMessage] = useState('');
-  const [formSent, setFormSent] = useState(false);
+  const [projects, setProjects] = useState<Project[]>(P);
+  const [sketch, setSketch] = useState<string[][]>(SKETCH);
+  const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState("connecting to server");
+  const [online, setOnline] = useState<boolean | null>(null);
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [sending, setSending] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  const prefersReducedMotion = useReducedMotion();
-  const headerRef = useRef<HTMLDivElement | null>(null);
-
-  // Floating hover preview coordinates for list view
-  const mouseX = useSpring(0, { stiffness: 220, damping: 25 });
-  const mouseY = useSpring(0, { stiffness: 220, damping: 25 });
-
-  // Update live clock
+  // loader + backend fetch
   useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const colomboTime = now.toLocaleTimeString('en-US', {
-        timeZone: 'Asia/Colombo',
-        hour12: true,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-      setCurrentTime(colomboTime);
+    const ctrl = new AbortController(); const start = performance.now();
+    let alive = true, p = 0;
+    const bar = setInterval(() => { p += (90 - p) * 0.06; setProgress(Math.round(p)); }, 120);
+    const t1 = setTimeout(() => setStatus("loading projects"), 700);
+    const t2 = setTimeout(() => setStatus("compiling portfolio"), 1500);
+    const kill = setTimeout(() => ctrl.abort(), 8000);
+    (async () => {
+      let ok = false;
+      try {
+        const res = await fetch(`${API}/api/portfolio`, { signal: ctrl.signal });
+        if (!res.ok) throw new Error(String(res.status));
+        const data = await res.json();
+        if (Array.isArray(data.projects) && data.projects.length) setProjects(data.projects);
+        if (Array.isArray(data.sketch) && data.sketch.length) setSketch(data.sketch);
+        ok = true;
+      } catch { /* offline: keep built-in content */ }
+      clearTimeout(kill);
+      const wait = Math.max(0, 1400 - (performance.now() - start));
+      setTimeout(() => {
+        if (!alive) return;
+        clearInterval(bar); setOnline(ok); setStatus(ok ? "ready" : "server offline, showing saved content"); setProgress(100);
+        setTimeout(() => { if (alive) setLoading(false); }, 600);
+      }, wait);
+    })();
+    return () => { alive = false; clearInterval(bar); clearTimeout(t1); clearTimeout(t2); clearTimeout(kill); ctrl.abort(); };
+  }, []);
+  useEffect(() => { document.body.style.overflow = loading ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [loading]);
+
+  const send = async (e: React.FormEvent) => {
+    e.preventDefault(); setSending("sending");
+    try {
+      const res = await fetch(`${API}/api/contact`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      if (!res.ok) throw new Error(String(res.status));
+      setSending("sent"); setForm({ name: "", email: "", message: "" }); burst(); showToast("Message sent");
+    } catch { setSending("error"); }
+  };
+
+  // typing line
+  useEffect(() => {
+    let pi = 0, ci = 0, del = false; let timer: ReturnType<typeof setTimeout>;
+    const tick = () => {
+      const w = TYPED[pi]; ci += del ? -1 : 1; setTyped(w.slice(0, ci));
+      let t = del ? 35 : 75;
+      if (!del && ci === w.length) { del = true; t = 1500; } else if (del && ci === 0) { del = false; pi = (pi + 1) % TYPED.length; t = 300; }
+      timer = setTimeout(tick, t);
     };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
+    tick(); return () => clearTimeout(timer);
   }, []);
 
-  // Track cursor for floating preview
-  const handleMouseMove = (e: React.MouseEvent) => {
-    mouseX.set(e.clientX + 24);
-    mouseY.set(e.clientY - 120);
-  };
+  // scroll progress, timeline, pinned horizontal gallery
+  useEffect(() => {
+    const root = document.documentElement;
+    const layout = () => {
+      const s = hs.current, t = track.current; if (!s || !t) return;
+      s.style.height = innerWidth > 900 ? `${t.scrollWidth - innerWidth + innerHeight + 80}px` : "auto";
+    };
+    const onScroll = () => {
+      const h = root.scrollHeight - innerHeight;
+      root.style.setProperty("--sp", String(h > 0 ? scrollY / h : 0));
+      const tl = document.querySelector<HTMLElement>(".path");
+      if (tl) { const r = tl.getBoundingClientRect(); tl.style.setProperty("--tp", String(Math.min(1, Math.max(0, (innerHeight * 0.65 - r.top) / r.height)))); }
+      const s = hs.current, t = track.current;
+      if (s && t) {
+        if (innerWidth > 900) {
+          const total = s.offsetHeight - innerHeight;
+          const pr = Math.min(1, Math.max(0, -s.getBoundingClientRect().top / total));
+          t.style.transform = `translateX(${-pr * (t.scrollWidth - innerWidth + 48)}px)`;
+          s.style.setProperty("--hp", String(pr));
+        } else t.style.transform = "";
+      }
+    };
+    layout(); onScroll();
+    const both = () => { layout(); onScroll(); };
+    addEventListener("scroll", onScroll, { passive: true }); addEventListener("resize", both);
+    const id = setTimeout(both, 300);
+    return () => { clearTimeout(id); removeEventListener("scroll", onScroll); removeEventListener("resize", both); };
+  }, [projects]);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    sfx.playSuccess();
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3200);
-  };
+  // custom cursor
+  useEffect(() => {
+    const c = cur.current; if (!c || matchMedia("(hover:none)").matches) return;
+    let x = 0, y = 0, tx = 0, ty = 0, raf = 0;
+    const mv = (e: PointerEvent) => { tx = e.clientX; ty = e.clientY; c.classList.toggle("big", !!(e.target as HTMLElement).closest("a,button,input,textarea,.cv")); };
+    const loop = () => { x += (tx - x) * 0.2; y += (ty - y) * 0.2; c.style.transform = `translate(${x}px,${y}px)`; raf = requestAnimationFrame(loop); };
+    c.style.opacity = "1"; loop(); addEventListener("pointermove", mv, { passive: true });
+    return () => { cancelAnimationFrame(raf); removeEventListener("pointermove", mv); };
+  }, []);
 
-  const toggleSound = () => {
-    const next = !soundEnabled;
-    setSoundEnabled(next);
-    sfx.enabled = next;
-    if (next) {
-      sfx.playBlip(580);
-      showToast('Sound Effects Enabled 🔔');
-    } else {
-      showToast('Sound Muted 🔕');
-    }
-  };
+  // reveal on scroll
+  useEffect(() => {
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("on"); io.unobserve(e.target); } }), { threshold: 0.15 });
+    document.querySelectorAll(".rv").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [projects, sketch]);
 
-  const copyToClipboard = (text: string, type: 'email' | 'code') => {
-    navigator.clipboard.writeText(text);
-    if (type === 'email') {
-      setCopiedEmail(true);
-      showToast('Copied email (kavindumalshan2003@gmail.com) to clipboard!');
-      setTimeout(() => setCopiedEmail(false), 2000);
-    } else {
-      setCopiedCode(true);
-      showToast('Code snippet copied to clipboard!');
-      setTimeout(() => setCopiedCode(false), 2000);
-    }
-  };
+  // rotating greeting, active section tracking, tap ripples
+  useEffect(() => { const id = setInterval(() => setGi((g) => (g + 1) % GREET.length), 2600); return () => clearInterval(id); }, []);
+  useEffect(() => {
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) setSec(e.target.id === "sketch" ? "work" : e.target.id); }), { rootMargin: "-45% 0px -50% 0px" });
+    ["top", "talent", "work", "sketch", "path", "hello"].forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
+    return () => io.disconnect();
+  }, [projects]);
+  useEffect(() => {
+    const dn = (e: PointerEvent) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>(".btn,.dock a,.pc .cv,.up"); if (!el) return;
+      const r = el.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2, s = document.createElement("span");
+      s.className = "rip"; s.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`;
+      el.appendChild(s); setTimeout(() => s.remove(), 700);
+    };
+    addEventListener("pointerdown", dn, { passive: true }); return () => removeEventListener("pointerdown", dn);
+  }, []);
 
-  const runTrafficSimulation = () => {
-    if (isSimulatingTraffic) return;
-    setIsSimulatingTraffic(true);
-    sfx.playBlip(600);
-    setPipelineStep(0);
+  // dialog
+  useEffect(() => { const d = dlg.current; if (!d) return; if (active !== null && !d.open) d.showModal(); if (active === null && d.open) d.close(); }, [active]);
 
-    const steps = [1, 2, 3, 4];
-    steps.forEach((step, idx) => {
-      setTimeout(() => {
-        setPipelineStep(step);
-        sfx.playBlip(650 + step * 80);
-      }, (idx + 1) * 350);
-    });
+  // command palette (Ctrl/Cmd + K)
+  useEffect(() => {
+    const k = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setCmd((v) => !v); setQ(""); }
+      if (e.key === "Escape") setCmd(false);
+    };
+    addEventListener("keydown", k); return () => removeEventListener("keydown", k);
+  }, []);
+  const go = (id: string) => { setCmd(false); setMenu(false); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); };
+  const cmds: [string, () => void][] = [
+    ["Go to talent", () => go("talent")], ["Go to work", () => go("work")], ["Go to experience", () => go("path")], ["Go to contact", () => go("hello")],
+    ["Copy email address", () => { setCmd(false); copyMail(); }], ["Open GitHub", () => { setCmd(false); open("https://github.com/kavizzz03", "_blank"); }],
+    ["Open LinkedIn", () => { setCmd(false); open("https://linkedin.com/in/kavindu-bogahawatte-7b3810320", "_blank"); }],
+  ];
+  const shown = cmds.filter(([l]) => l.toLowerCase().includes(q.toLowerCase()));
 
-    setTimeout(() => {
-      setSimulatedRequests(prev => prev + 1);
-      setIsSimulatingTraffic(false);
-      setPipelineStep(null);
-      sfx.playSuccess();
-    }, 1800);
-  };
+  const mag = (e: React.PointerEvent<HTMLElement>) => { const el = e.currentTarget, r = el.getBoundingClientRect(); el.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.25}px,${(e.clientY - r.top - r.height / 2) * 0.35}px)`; };
+  const unmag = (e: React.PointerEvent<HTMLElement>) => { e.currentTarget.style.transform = ""; };
+  const tilt = (e: React.PointerEvent<HTMLElement>) => { const el = e.currentTarget, r = el.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5; el.style.transform = `perspective(800px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) scale(1.02)`; };
+  const glow = (e: React.PointerEvent<HTMLElement>) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--gx", `${e.clientX - r.left}px`); e.currentTarget.style.setProperty("--gy", `${e.clientY - r.top}px`); };
 
-  const handleNavClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
-    sfx.playBlip(480);
-    if (viewMode !== 'home') {
-      setViewMode('home');
-      setTimeout(() => {
-        const target = document.getElementById(id);
-        if (target) {
-          const headerH = headerRef.current?.offsetHeight ?? 0;
-          window.scrollTo({ top: Math.max(target.getBoundingClientRect().top + window.scrollY - headerH - 20, 0), behavior: 'smooth' });
-        }
-      }, 100);
-      return;
-    }
-    const target = document.getElementById(id);
-    if (!target) return;
-    const headerH = headerRef.current?.offsetHeight ?? 0;
-    const top = target.getBoundingClientRect().top + window.scrollY - headerH - 20;
-    window.scrollTo({ top: Math.max(top, 0), behavior: prefersReducedMotion ? 'auto' : 'smooth' });
-    setNavOpen(false);
-  }, [viewMode, prefersReducedMotion]);
-
-  const scrollToTop = useCallback((e?: React.MouseEvent) => {
-    if (e) e.preventDefault();
-    sfx.playBlip(520);
-    setViewMode('home');
-    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
-    setNavOpen(false);
-  }, [prefersReducedMotion]);
-
-  const openProject = (project: Project) => {
-    sfx.playBlip(540);
-    setSelectedProject(project);
-    setSelectedImageIndex(0);
-    setLightboxOpen(false);
-  };
-
-  const closeProject = () => {
-    sfx.playBlip(440);
-    setSelectedProject(null);
-    setSelectedImageIndex(0);
-    setLightboxOpen(false);
-  };
-
-  // Categories list
-  const categories = ['All', 'Backend System', 'Enterprise Platform', 'Mobile App', 'AI & IoT', 'Full-Stack'];
-
-  // Filtered projects
-  const filteredProjects = useMemo(() => {
-    return ALL_PROJECTS.filter(p => {
-      const matchCategory = activeCategory === 'All' || p.category === activeCategory;
-      const matchSearch = searchQuery.trim() === '' ||
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchCategory && matchSearch;
-    });
-  }, [activeCategory, searchQuery]);
-
-  const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const mailto = `mailto:kavindumalshan2003@gmail.com?subject=Project Inquiry from ${encodeURIComponent(contactName)}&body=${encodeURIComponent(`Name: ${contactName}\nEmail: ${contactEmail}\n\nMessage:\n${contactMessage}`)}`;
-    window.location.href = mailto;
-    setFormSent(true);
-    showToast('Redirecting to your mail client...');
-    setTimeout(() => {
-      setContactModalOpen(false);
-      setFormSent(false);
-    }, 2000);
-  };
-
-  const activeProjectImages = selectedProject
-    ? [selectedProject.imageUrl, ...(selectedProject.images || [])].filter(Boolean)
-    : [];
-  const activeImage = activeProjectImages[selectedImageIndex] || selectedProject?.imageUrl || '';
+  const p = active !== null ? projects[active] : null;
 
   return (
-    <div
-      onMouseMove={handleMouseMove}
-      className="min-h-screen bg-[#FAFAFA] text-slate-900 font-sans selection:bg-slate-900 selection:text-white overflow-x-hidden relative"
-    >
-      {/* FLOATING AMBIENT PASTEL ORBS */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-10 left-[10%] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-cyan-100/40 via-sky-100/30 to-transparent blur-[120px] animate-float-slow" />
-        <div className="absolute top-[40%] right-[5%] w-[600px] h-[600px] rounded-full bg-gradient-to-bl from-emerald-100/40 via-teal-50/30 to-transparent blur-[140px] animate-float-reverse" />
-        <div className="absolute bottom-[10%] left-[20%] w-[550px] h-[550px] rounded-full bg-gradient-to-tr from-indigo-100/30 via-slate-100/30 to-transparent blur-[130px] animate-float-slow" />
-        <div className="absolute inset-0 subtle-grid opacity-60" />
+    <>
+      <div className="sprog" aria-hidden="true" />
+      <div className="cursor" ref={cur} aria-hidden="true"><i /></div>
+
+      <div className={`loader${loading ? "" : " done"}`} role="status" aria-live="polite" aria-hidden={!loading}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="lav" src={AVATAR} alt="" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+        <div className="lg">kavindu<span>.dev</span></div>
+        <div className="bar" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${progress}%` }} /></div>
+        <div className="lt"><span>&gt; {status}</span><b>{progress}%</b></div>
       </div>
 
-      {/* TOAST NOTIFICATION */}
-      <AnimatePresence>
-        {toastMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-full bg-slate-900 text-white text-xs font-mono shadow-2xl backdrop-blur-md flex items-center gap-2.5 border border-slate-700"
-          >
-            <Sparkles size={14} className="text-amber-400" />
-            <span>{toastMessage}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="blobs" aria-hidden="true"><i /><i /><i />
+        {SYM.map((x, i) => <b key={i} style={{ "--l": `${5 + i * 9.5}%`, "--t": `${15 + (i % 4) * 5}s`, animationDelay: `-${i * 2.4}s` } as React.CSSProperties}>{x}</b>)}
+      </div>
 
-      {/* ================= MINIMALIST FLOATING NAVBAR ================= */}
-      <div ref={headerRef} className="fixed top-0 inset-x-0 z-[70] px-4 sm:px-8 md:px-14 pt-4">
-        <header className="max-w-7xl mx-auto flex items-center justify-between py-3.5 px-6 sm:px-8 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-full shadow-xs">
-          <a
-            href="#top"
-            onClick={scrollToTop}
-            className="group flex items-center gap-3 text-slate-900 hover:opacity-80 transition-opacity"
-          >
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600" />
-            </span>
-            <div className="flex flex-col">
-              <span className="font-mono text-xs font-semibold tracking-wider uppercase">Kavindu Bogahawatte</span>
-              <span className="font-mono text-[9px] text-slate-500 hidden sm:inline">Backend Architect • Mobile Specialist</span>
+      <nav className="pill" aria-label="Main">
+        <a className="logo" href="#top">kb<span>.</span></a>
+        {[["talent", "Talent"], ["work", "Work"], ["path", "Experience"], ["hello", "Contact"]].map(([id, l]) => <a key={id} href={`#${id}`} className={sec === id ? "on" : ""}>{l}</a>)}
+        <button className="kbd" onClick={() => setCmd(true)} aria-label="Open command menu">Ctrl K</button>
+        <button className="burger" aria-label="Menu" aria-expanded={menu} onClick={() => setMenu(!menu)}>{menu ? "✕" : "☰"}</button>
+      </nav>
+      {menu && <div className="mm">{["talent", "work", "path", "hello"].map((id) => <a key={id} href={`#${id}`} onClick={() => setMenu(false)}>{id === "path" ? "Experience" : id[0].toUpperCase() + id.slice(1)}</a>)}</div>}
+
+      <nav className="dock" aria-label="Quick navigation">
+        {DOCK.map(([id, l, d]) => (
+          <a key={id} href={`#${id}`} className={sec === id ? "on" : ""}><svg viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg>{l}</a>
+        ))}
+      </nav>
+      <a className="up" href="#top" aria-label="Back to top"><svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" className="t" /><circle cx="22" cy="22" r="19" className="g" /><path d="M16 25l6-6 6 6" /></svg></a>
+
+      {/* HERO */}
+      <header className={`hero${loading ? "" : " go"}`} id="top">
+        <Net />
+        <div className="w hg">
+          <div className="hl">
+            <span className="avail"><i />Open to backend and full-stack roles</span>
+            <h1><span className="l1"><Scramble t="Kavindu" /></span><span className="l2">Bogahawatte</span></h1>
+            <p className="role">Software engineer who ships <u>dependable</u> systems.</p>
+            <p className="intro">I build the quiet systems behind everyday things: the message that lands on a customer&apos;s phone, the order that gets approved, the app that just works.</p>
+            <p className="typed">$ now_learning --about <b>{typed}</b></p>
+            <div className="row">
+              <a className="btn" href="#work" onPointerMove={mag} onPointerLeave={unmag}>See my work</a>
+              <button className="btn o" onClick={copyMail} onPointerMove={mag} onPointerLeave={unmag}>Copy email</button>
             </div>
-          </a>
-
-          {/* Desktop Nav Items */}
-          <nav className="hidden md:flex items-center gap-8 font-mono text-xs uppercase tracking-widest text-slate-500">
-            {[
-              { id: 'works', label: 'Works' },
-              { id: 'pipeline', label: 'Pipeline' },
-              { id: 'snippets', label: 'Code' },
-              { id: 'stack', label: 'Stack' },
-              { id: 'experience', label: 'Experience' },
-              { id: 'about', label: 'About' },
-              { id: 'faq', label: 'FAQ' },
-            ].map(item => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                onClick={(e) => handleNavClick(e, item.id)}
-                className="hover:text-slate-900 transition-colors py-1 relative group"
-              >
-                {item.label}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-slate-900 transition-all duration-300 group-hover:w-full" />
-              </a>
-            ))}
-
-            <button
-              onClick={() => setViewMode(viewMode === 'projects-page' ? 'home' : 'projects-page')}
-              className={`px-3.5 py-1.5 rounded-full text-[11px] font-mono uppercase tracking-wider transition-all border ${viewMode === 'projects-page' ? 'bg-slate-900 text-white border-slate-900 font-bold' : 'bg-slate-100 border-slate-200 text-slate-700 hover:border-slate-400'}`}
-            >
-              All 30+ Archive ↗
-            </button>
-          </nav>
-
-          {/* Right Header Actions */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <button
-              onClick={() => setContactModalOpen(true)}
-              className="px-5 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-mono text-xs font-medium uppercase tracking-wider transition-all shadow-xs active:scale-95"
-            >
-              Contact
-            </button>
-
-            <button
-              onClick={() => setNavOpen(!navOpen)}
-              className="md:hidden p-2 text-slate-700 hover:text-slate-900 rounded-full bg-slate-100 border border-slate-200"
-              aria-label="Toggle menu"
-            >
-              {navOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
           </div>
-        </header>
-
-        {/* Mobile Navigation Dropdown */}
-        <AnimatePresence>
-          {navOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="md:hidden mt-2 p-6 rounded-3xl bg-white border border-slate-200 shadow-xl flex flex-col gap-4 text-center"
-            >
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 font-mono text-[11px] text-slate-500">
-                <span>Colombo, LK ({currentTime || 'UTC+5:30'})</span>
-                <span className="text-emerald-600 font-semibold">● Available for Hire</span>
+          <div className="hr">
+            <div className="orbit" aria-hidden="true">
+              {ORBIT.map((o, i) => <span key={o} className="ob" style={{ "--a": `${i * 60}deg` } as React.CSSProperties}><em>{o}</em></span>)}
+            </div>
+            <div className="pf" onPointerMove={tilt} onPointerLeave={unmag} onClick={() => { setGi((g) => (g + 1) % GREET.length); burst(); }}>
+              <i className="ring" aria-hidden="true" />
+              <div className="ph">
+                {photoOk && /* eslint-disable-next-line @next/next/no-img-element */ <img src={PHOTO} alt="Kavindu Bogahawatte, software engineer" onError={() => setPhotoOk(false)} />}
+                {!photoOk && <b>KB</b>}
               </div>
-              {[
-                { id: 'works', label: 'Selected Works' },
-                { id: 'pipeline', label: 'Architecture Pipeline' },
-                { id: 'snippets', label: 'Code Snippets & Blueprints' },
-                { id: 'stack', label: 'Tech Stack & Competencies' },
-                { id: 'experience', label: 'Career Journey' },
-                { id: 'about', label: 'About & Education' },
-                { id: 'faq', label: 'Frequently Asked Questions' },
-              ].map(item => (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  onClick={(e) => { handleNavClick(e, item.id); setNavOpen(false); }}
-                  className="font-mono text-xs uppercase tracking-widest text-slate-700 hover:text-slate-900 py-2"
-                >
-                  {item.label}
-                </a>
-              ))}
-              <button
-                onClick={() => { setViewMode(viewMode === 'projects-page' ? 'home' : 'projects-page'); setNavOpen(false); }}
-                className="py-3 mt-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-900 font-mono text-xs uppercase font-bold tracking-widest"
-              >
-                Browse All 30+ Projects Archive ↗
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <span className="tag">Colombo, Sri Lanka</span>
+              <span className="hi" key={gi} aria-hidden="true">{GREET[gi]}</span>
+              <span className="tapme" aria-hidden="true">tap me</span>
+            </div>
+            <div className="code" aria-hidden="true">
+              <div className="cb"><i /><i /><i /><span>kavindu.ts</span></div>
+              <pre>
+                <span style={{ "--d": "1.6s" } as React.CSSProperties}><s>const</s> kavindu = {"{"}</span>
+                <span style={{ "--d": "1.9s" } as React.CSSProperties}>  role: <q>&quot;Associate Software Engineer&quot;</q>,</span>
+                <span style={{ "--d": "2.2s" } as React.CSSProperties}>  at: <q>&quot;ASB Fashion&quot;</q>,</span>
+                <span style={{ "--d": "2.5s" } as React.CSSProperties}>  shipped: <q>&quot;200,000+ customer platform&quot;</q>,</span>
+                <span style={{ "--d": "2.8s" } as React.CSSProperties}>  openTo: <q>&quot;backend, full-stack&quot;</q>,</span>
+                <span style={{ "--d": "3.1s" } as React.CSSProperties}>{"}"};</span>
+              </pre>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="mq" aria-hidden="true"><div>{[0, 1].flatMap((r) => MARQUEE.map((w) => ({ w, r }))).map((o, i) => <span key={i}>{o.w}</span>)}</div><div className="rev">{[0, 1].flatMap((r) => MARQUEE.slice().reverse().map((w) => ({ w, r }))).map((o, i) => <span key={i}>{o.w}</span>)}</div></div>
+
+      {/* TALENT */}
+      <div className="w">
+        <section id="talent">
+          <h2 className="rv split"><Split t="What I'm good at" /></h2>
+          <div className="power">
+            {[["Messaging at scale", "SMS, WhatsApp and email campaigns for 200,000+ customers, built to reach 1 million."], ["Business workflows", "Purchasing, approvals, goods receiving and quality checks turned into reliable software."], ["Android, AI and data", "Jetpack Compose games, Whisper AI tools and an XGBoost flood-prediction prototype."]].map(([t, d], i) => (
+              <div className="pw rv" key={t} style={{ transitionDelay: `${i * 120}ms` }}><h3>{t}</h3><p>{d}</p></div>
+            ))}
+          </div>
+          <div className="nums">
+            <div className="num rv"><Count n={200000} plus /><span>loyalty customers on the platform I built</span></div>
+            <div className="num rv"><Count n={1000000} /><span>customers it&apos;s designed to scale to</span></div>
+            <div className="num rv"><Count n={30} plus /><span>personal projects</span></div>
+            <div className="num rv"><Count n={6} /><span>stacks I ship in, PHP to Kotlin</span></div>
+          </div>
+          <div className="tools">
+            {TOOLS.map((t, i) => (
+              <div className="tb rv" key={t[0]} onPointerMove={glow} style={{ "--bgc": `var(${t[1]})`, transitionDelay: `${(i % 2) * 100}ms` } as React.CSSProperties}>
+                <h3>{t[0]}</h3>
+                <div className="chips">{t[2].map((c, j) => <span key={c} style={{ transitionDelay: `${j * 40}ms` }}>{c}</span>)}</div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
 
-      {viewMode === 'projects-page' ? (
-        /* ================= DEDICATED ARCHIVE CATALOG ================= */
-        <main className="max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pt-36 pb-32 relative z-10">
-          <div className="mb-12 border-b border-slate-200 pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      {/* WORK: pinned, scrolls sideways */}
+      <section id="work" className="hs" ref={hs}>
+        <div className="pin">
+          <div className="w wh"><h2 className="rv split"><Split t="Things I've built" /></h2><p className="sub">Scroll to move through six projects. Open one for the full story.</p><span className="swipe" aria-hidden="true">Swipe sideways</span></div>
+          <div className="track" ref={track} onScroll={(e) => { const t = e.currentTarget; if (innerWidth <= 900) hs.current?.style.setProperty("--hp", String(t.scrollLeft / Math.max(1, t.scrollWidth - t.clientWidth))); }}>
+            {projects.map((pr, i) => (
+              <article className="pc" key={pr.n} style={{ "--ac": ACC[pr.k] || ACC.bc } as React.CSSProperties}>
+                <button className="cv" onClick={() => setActive(i)} onPointerMove={tilt} onPointerLeave={unmag} aria-label={`Read about ${pr.n}`}><Scene k={pr.k} /></button>
+                <small>{pr.y}</small>
+                <h3>{pr.n}</h3>
+                <p>{pr.d}</p>
+                <div className="tg">{pr.tags.slice(0, 4).map((t) => <i key={t}>{t}</i>)}</div>
+                <button className="btn o" onClick={() => setActive(i)}>Read the story</button>
+              </article>
+            ))}
+            <div className="pc end"><h3>More below</h3><p>The sketchbook has smaller builds from my 30+ side projects.</p><a className="btn" href="#sketch">Keep scrolling</a></div>
+          </div>
+          <div className="hbar" aria-hidden="true"><i /></div>
+        </div>
+      </section>
+
+      <div className="w">
+        <section id="sketch">
+          <h2 className="rv split"><Split t="The sketchbook" /></h2>
+          <p className="sub">Smaller builds from the side projects.</p>
+          <div className="sk">
+            {sketch.map((m) => (
+              <div className="nt rv" key={m[0]} onPointerMove={glow} style={{ "--bgc": `var(${m[3] || "--p1"})` } as React.CSSProperties}>
+                <h3>{m[0]}</h3><p>{m[1]}</p><small>{m[2]}</small>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="path">
+          <h2 className="rv split"><Split t="Experience" /></h2>
+          <div className="path">
+            {STEPS.map((s) => (
+              <div className="step rv" key={s[1]}>
+                <time>{s[0]}</time>
+                <div><h3>{s[1]}</h3><p>{s[2]}</p>{s[3].length > 0 && <ul>{s[3].map((x) => <li key={x}>{x}</li>)}</ul>}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="hello">
+          <div className="cta rv">
             <div>
-              <button
-                onClick={() => setViewMode('home')}
-                className="font-mono text-xs text-slate-500 hover:text-slate-900 uppercase tracking-widest mb-4 inline-flex items-center gap-2 group"
-              >
-                <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to Home Overview
-              </button>
-              <h1 className="font-serif text-4xl sm:text-6xl text-slate-900 tracking-tight">
-                Complete System &amp; Project Archive
-              </h1>
-              <p className="text-slate-600 font-light mt-3 max-w-2xl text-sm sm:text-base leading-relaxed">
-                A comprehensive engineering record of 30+ enterprise platforms, backend engines, microservices, mobile apps, and machine learning pipelines built to date.
-              </p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="av" src={AVATAR} alt="" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+              <h2>Let&apos;s build something dependable.</h2>
+              <p>I&apos;m looking for backend and full-stack roles, plus contract work on APIs, messaging and Android apps. References are available on request.</p>
+              <div className="links">
+                <a href={`mailto:${MAIL}`}>{MAIL}</a>
+                <a href="https://wa.me/94740890730" target="_blank" rel="noopener noreferrer">WhatsApp +94 74 089 0730</a>
+                <a href="https://github.com/kavizzz03" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="https://linkedin.com/in/kavindu-bogahawatte-7b3810320" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              </div>
             </div>
-
-            {/* Search Input */}
-            <div className="w-full md:w-72 relative">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search systems, tags, client..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white border border-slate-200 text-xs font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition-colors shadow-2xs"
-              />
-            </div>
+            <form className="fm" onSubmit={send}>
+              <input required placeholder="Your name" aria-label="Your name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <input required type="email" placeholder="Your email" aria-label="Your email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <textarea required placeholder="What would you like to build?" aria-label="Message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
+              <button className="btn lime" type="submit" disabled={sending === "sending"} onPointerMove={mag} onPointerLeave={unmag}>{sending === "sending" ? "Sending" : "Send message"}</button>
+              <span className="fmsg" role="status">{sending === "sent" && "Sent. I'll reply soon."}{sending === "error" && "Couldn't reach the server. Please email or WhatsApp me instead."}</span>
+            </form>
           </div>
+        </section>
+      </div>
 
-          {/* Category Filter Pills */}
-          <div className="flex flex-wrap gap-2 mb-10">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => { sfx.playBlip(520); setActiveCategory(cat); }}
-                className={`px-4 py-2 rounded-full font-mono text-xs uppercase tracking-wider transition-all ${activeCategory === cat ? 'bg-slate-900 text-white font-bold shadow-xs' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-400'}`}
-              >
-                {cat} {cat === 'All' ? `(${ALL_PROJECTS.length})` : ''}
-              </button>
-            ))}
+      <footer><div className="w"><span>© 2026 Kavindu Bogahawatte, Colombo, Sri Lanka</span>{online !== null && <span className={online ? "ok" : "off"}>{online ? "Live data" : "Offline mode"}</span>}</div></footer>
+
+      {cmd && (
+        <div className="cmd" onClick={() => setCmd(false)}>
+          <div className="cbx" role="dialog" aria-label="Command menu" onClick={(e) => e.stopPropagation()}>
+            <input autoFocus placeholder="Type a command" aria-label="Search commands" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && shown[0]) shown[0][1](); }} />
+            {shown.map(([l, f]) => <button key={l} onClick={f}>{l}</button>)}
+            {!shown.length && <p>No command matches. Try &quot;work&quot; or &quot;email&quot;.</p>}
           </div>
-
-          {/* Projects Bento Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {filteredProjects.map((proj, idx) => (
-              <motion.div
-                key={proj.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: idx * 0.04 }}
-                onClick={() => openProject(proj)}
-                className="group cursor-pointer bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-2xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="aspect-[16/10] overflow-hidden bg-slate-100 relative">
-                    <ImageWithFallback
-                      src={proj.imageUrl}
-                      alt={proj.name}
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
-                    />
-                    <div className="absolute top-3.5 left-3.5 flex items-center gap-2">
-                      <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md border border-slate-200 font-mono text-[9px] text-slate-900 uppercase tracking-wider shadow-2xs">
-                        {proj.category}
-                      </span>
-                    </div>
-                    <div className="absolute top-3.5 right-3.5 font-mono text-[10px] text-slate-600 px-2.5 py-0.5 rounded-full bg-white/95 border border-slate-200 shadow-2xs">
-                      {proj.year}
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="font-serif text-2xl text-slate-900 group-hover:text-slate-600 transition-colors">
-                        {proj.name}
-                      </h3>
-                      <ArrowUpRight size={18} className="text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 mt-1" />
-                    </div>
-                    <p className="text-slate-600 font-light text-xs leading-relaxed line-clamp-3 mb-4">
-                      {proj.description}
-                    </p>
-                    {proj.metrics && (
-                      <div className="flex items-center gap-2 text-[11px] font-mono text-slate-700 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
-                        <Activity size={12} className="text-slate-900 shrink-0" />
-                        <span className="truncate">{proj.metrics}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="px-6 pb-6 pt-2 border-t border-slate-100 flex flex-wrap gap-1.5">
-                  {proj.tags.slice(0, 4).map((t, ti) => (
-                    <span key={ti} className="font-mono text-[9px] bg-slate-50 text-slate-600 px-2 py-0.5 rounded border border-slate-100">
-                      {t}
-                    </span>
-                  ))}
-                  {proj.tags.length > 4 && (
-                    <span className="font-mono text-[9px] text-slate-400 px-1.5 py-0.5">+{proj.tags.length - 4}</span>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {filteredProjects.length === 0 && (
-            <div className="text-center py-20 bg-white rounded-3xl border border-slate-200">
-              <Search size={32} className="text-slate-400 mx-auto mb-3" />
-              <p className="font-mono text-sm text-slate-600">No matching projects found for &quot;{searchQuery}&quot;</p>
-              <button
-                onClick={() => { setSearchQuery(''); setActiveCategory('All'); }}
-                className="mt-4 px-4 py-2 rounded-full bg-slate-900 text-white font-mono text-xs uppercase font-bold"
-              >
-                Reset Filters
-              </button>
-            </div>
-          )}
-        </main>
-      ) : (
-        /* ================= MAIN HOME PORTFOLIO ================= */
-        <>
-          {/* ================= HERO SHOWCASE ================= */}
-          <section id="top" className="relative min-h-[94vh] flex flex-col justify-end px-4 sm:px-8 md:px-14 pb-16 pt-36 z-10 border-b border-slate-200/70 bg-white/70 backdrop-blur-xs">
-            {/* Atmospheric subtle background image */}
-            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-8 mix-blend-multiply">
-              <ImageWithFallback
-                src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=2000"
-                alt="Architectural Blueprint Background"
-                className="w-full h-full object-cover grayscale contrast-125"
-              />
-            </div>
-
-            <div className="max-w-7xl mx-auto w-full relative z-10">
-              
-              {/* Live Badge & Colombo Status Ribbon */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-8">
-                <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-mono text-[11px] uppercase tracking-wider shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping" />
-                  <span>Available for Backend Roles &amp; Contracts</span>
-                </div>
-
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-mono text-[11px]">
-                  <Clock size={12} className="text-slate-900" />
-                  <span>Colombo, Sri Lanka</span>
-                  <span className="text-slate-400">•</span>
-                  <span className="text-slate-900 font-semibold">{currentTime || 'UTC+5:30'}</span>
-                </div>
-              </div>
-
-              {/* Bold Editorial Headline */}
-              <h1 className="font-serif text-5xl sm:text-7xl md:text-8xl lg:text-[5.5rem] tracking-tight text-slate-900 leading-[1.03] max-w-6xl mb-8">
-                I engineer resilient <span className="italic font-light text-slate-500">backend systems</span>, distributed APIs &amp; native mobile apps.
-              </h1>
-
-              {/* Sub-Headline & Interactive Actions Grid */}
-              <div className="grid lg:grid-cols-12 gap-8 items-end pt-8 border-t border-slate-100">
-                <div className="lg:col-span-7 space-y-4">
-                  <p className="text-slate-600 text-base sm:text-lg font-light leading-relaxed max-w-2xl">
-                    Software Engineer &amp; System Architect with extensive production experience delivering enterprise procurement workflows, high-volume broadcast engines for <span className="text-slate-900 font-medium">200,000+ loyalty customers</span>, machine learning hydrological research, and native Android applications.
-                  </p>
-                  
-                  <div className="flex flex-wrap items-center gap-4 pt-2 font-mono text-xs">
-                    <a
-                      href="#works"
-                      onClick={(e) => handleNavClick(e, 'works')}
-                      className="px-6 py-3.5 rounded-full bg-slate-900 text-white font-medium uppercase tracking-wider hover:bg-slate-800 transition-all inline-flex items-center gap-2 shadow-xs active:scale-95"
-                    >
-                      Selected Works <ArrowRight size={14} />
-                    </a>
-
-                    <button
-                      onClick={() => setViewMode('projects-page')}
-                      className="px-6 py-3.5 rounded-full bg-white border border-slate-200 text-slate-800 hover:border-slate-900 transition-all uppercase tracking-wider inline-flex items-center gap-2 shadow-2xs active:scale-95"
-                    >
-                      30+ Projects Archive ↗
-                    </button>
-
-                    <button
-                      onClick={() => copyToClipboard('kavindumalshan2003@gmail.com', 'email')}
-                      className="px-4 py-3.5 rounded-full bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 transition-colors inline-flex items-center gap-2"
-                    >
-                      {copiedEmail ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
-                      <span>Copy Email</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Interactive Live Backend Telemetry & Traffic Simulator */}
-                <div className="lg:col-span-5">
-                  <div className="p-6 rounded-3xl bg-white/90 border border-slate-200/90 shadow-md backdrop-blur-md relative overflow-hidden">
-                    <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 font-mono text-[10px] uppercase text-slate-500">
-                      <div className="flex items-center gap-2">
-                        <Terminal size={12} className="text-slate-900" />
-                        <span>System Telemetry Matrix</span>
-                      </div>
-                      <span className="text-emerald-700 font-semibold flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" /> LIVE
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 font-mono text-xs mb-3">
-                      <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-2xs">
-                        <span className="text-[10px] text-slate-500 block mb-1">PROD ACTIVE USERS</span>
-                        <span className="text-slate-900 font-bold text-sm">200,000+</span>
-                      </div>
-
-                      <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-2xs">
-                        <span className="text-[10px] text-slate-500 block mb-1">PROD REQUESTS</span>
-                        <span className="text-slate-900 font-bold text-sm">{simulatedRequests.toLocaleString()} req/s</span>
-                      </div>
-
-                      <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-2xs">
-                        <span className="text-[10px] text-slate-500 block mb-1">DB CONNECTION POOL</span>
-                        <span className="text-emerald-700 font-bold text-sm">Optimal (16ms)</span>
-                      </div>
-
-                      <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-2xs">
-                        <span className="text-[10px] text-slate-500 block mb-1">ASYNC QUEUE</span>
-                        <span className="text-slate-900 font-bold text-sm">0 Pending</span>
-                      </div>
-                    </div>
-
-                    {/* Interactive Traffic Simulator Trigger */}
-                    <button
-                      onClick={runTrafficSimulation}
-                      disabled={isSimulatingTraffic}
-                      className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white font-mono text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-2xs active:scale-95"
-                    >
-                      <Play size={12} className={isSimulatingTraffic ? 'animate-spin' : ''} />
-                      <span>{isSimulatingTraffic ? 'Simulating Live Pipeline Request...' : 'Simulate Live API Request'}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </section>
-
-          {/* ================= INFINITE DUAL MARQUEE TICKER ================= */}
-          <section className="py-7 border-b border-slate-200/80 bg-white overflow-hidden select-none relative z-10">
-            {/* Top Marquee */}
-            <div className="animate-marquee-left mb-2.5">
-              {[
-                '✦ HIGH-THROUGHPUT BACKEND APIS',
-                '✦ DISTRIBUTED SYSTEMS ARCHITECTURE',
-                '✦ 200,000+ LOYALTY USERS SERVED',
-                '✦ KOTLIN & JETPACK COMPOSE',
-                '✦ WHATSAPP GRAPH CLOUD API',
-                '✦ ACID TRANSACTIONAL SCHEMAS',
-                '✦ PYTHON XGBOOST ML PIPELINES',
-                '✦ ASYNCHRONOUS QUEUE WORKERS',
-                '✦ HIGH-THROUGHPUT BACKEND APIS',
-                '✦ DISTRIBUTED SYSTEMS ARCHITECTURE',
-                '✦ 200,000+ LOYALTY USERS SERVED',
-                '✦ KOTLIN & JETPACK COMPOSE',
-              ].map((text, i) => (
-                <span key={i} className="font-mono text-xs sm:text-sm tracking-[0.25em] text-slate-500 mx-8 uppercase whitespace-nowrap">
-                  {text}
-                </span>
-              ))}
-            </div>
-
-            {/* Bottom Inverted Marquee */}
-            <div className="animate-marquee-right">
-              {[
-                '✦ PHP REST & NODE.JS MICROSERVICES',
-                '✦ SLIIT & UNIVERSITY OF BEDFORDSHIRE',
-                '✦ RELATIONAL DATABASE OPTIMIZATION',
-                '✦ MULTI-CARRIER SMS DISPATCHING',
-                '✦ ZERO STOCK DISCREPANCY PIPELINES',
-                '✦ IOT ULTRASONIC TELEMETRY',
-                '✦ CLEAN MVVM & MVI CODEBASE',
-                '✦ PHP REST & NODE.JS MICROSERVICES',
-                '✦ SLIIT & UNIVERSITY OF BEDFORDSHIRE',
-                '✦ RELATIONAL DATABASE OPTIMIZATION',
-              ].map((text, i) => (
-                <span key={i} className="font-mono text-[11px] sm:text-xs tracking-[0.2em] text-slate-400 mx-8 uppercase whitespace-nowrap">
-                  {text}
-                </span>
-              ))}
-            </div>
-          </section>
-
-          {/* ================= MAIN CONTENT SECTIONS ================= */}
-          <main className="max-w-7xl mx-auto px-4 sm:px-8 md:px-14 py-28 relative z-10">
-
-            {/* ================= SELECTED WORKS (SIGNATURE HOVER LIST & GRID TOGGLE) ================= */}
-            <section id="works" className="mb-36 scroll-mt-28">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-14 gap-6 border-b border-slate-200 pb-8">
-                <div>
-                  <div className="flex items-center gap-2 font-mono text-xs text-slate-500 uppercase tracking-[0.3em] mb-2">
-                    <Sparkles size={14} className="text-slate-900" />
-                    <span>Featured Engineering Portfolio</span>
-                  </div>
-                  <h2 className="font-serif text-4xl sm:text-5xl md:text-6xl text-slate-900 tracking-tight">
-                    Selected Works &amp; Enterprise Systems
-                  </h2>
-                </div>
-
-                {/* View Switcher & Archive Button */}
-                <div className="flex items-center gap-3">
-                  <div className="p-1 rounded-full bg-slate-100 border border-slate-200 flex items-center">
-                    <button
-                      onClick={() => { sfx.playBlip(500); setProjectDisplayMode('list'); }}
-                      className={`px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider transition-all ${projectDisplayMode === 'list' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                    >
-                      Hover List
-                    </button>
-                    <button
-                      onClick={() => { sfx.playBlip(550); setProjectDisplayMode('grid'); }}
-                      className={`px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider transition-all ${projectDisplayMode === 'grid' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-500 hover:text-slate-900'}`}
-                    >
-                      Bento Grid
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={() => setViewMode('projects-page')}
-                    className="font-mono text-xs text-slate-700 hover:text-slate-900 uppercase tracking-widest underline underline-offset-4 hidden sm:inline-block ml-3"
-                  >
-                    View 30+ Archive ↗
-                  </button>
-                </div>
-              </div>
-
-              {/* CURSOR-FOLLOWING FLOATING PREVIEW CARD (FOR LIST VIEW) */}
-              {!prefersReducedMotion && hoveredProject && projectDisplayMode === 'list' && (
-                <motion.div
-                  style={{
-                    position: 'fixed',
-                    left: mouseX,
-                    top: mouseY,
-                    pointerEvents: 'none',
-                    zIndex: 90,
-                  }}
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.85 }}
-                  transition={{ duration: 0.15 }}
-                  className="hidden lg:block w-72 rounded-2xl overflow-hidden bg-white/95 border border-slate-200 shadow-2xl p-2 backdrop-blur-md"
-                >
-                  <div className="aspect-[16/10] rounded-xl overflow-hidden bg-slate-100 mb-2 relative">
-                    <ImageWithFallback
-                      src={hoveredProject.imageUrl}
-                      alt={hoveredProject.name}
-                      className="w-full h-full object-cover"
-                    />
-                    <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/90 text-slate-900 border border-slate-200">
-                      {hoveredProject.category}
-                    </span>
-                  </div>
-                  <div className="px-1 py-1">
-                    <p className="font-serif text-sm text-slate-900 font-medium truncate">{hoveredProject.name}</p>
-                    <p className="font-mono text-[10px] text-slate-500">{hoveredProject.client}</p>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* VIEW MODE 1: INTERACTIVE HOVER LIST (SIGNATURE STYLE) */}
-              {projectDisplayMode === 'list' ? (
-                <div className="divide-y divide-slate-200 border-y border-slate-200 bg-white rounded-3xl shadow-xs overflow-hidden">
-                  {ALL_PROJECTS.slice(0, 6).map((proj, idx) => (
-                    <motion.div
-                      key={proj.id}
-                      onMouseEnter={() => { sfx.playBlip(420); setHoveredProject(proj); }}
-                      onMouseLeave={() => setHoveredProject(null)}
-                      onClick={() => openProject(proj)}
-                      initial={{ opacity: 0, y: 15 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.4, delay: idx * 0.04 }}
-                      className="group cursor-pointer py-7 sm:py-8 px-6 sm:px-8 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50 transition-all"
-                    >
-                      <div className="flex items-baseline gap-4 sm:gap-6 max-w-2xl">
-                        <span className="font-mono text-xs text-slate-400 w-8">0{idx + 1}</span>
-                        <div>
-                          <div className="flex flex-wrap items-center gap-3 mb-1.5">
-                            <h3 className="font-serif text-2xl sm:text-3xl text-slate-900 group-hover:text-slate-600 transition-colors">
-                              {proj.name}
-                            </h3>
-                            <span className="px-2.5 py-0.5 rounded-full font-mono text-[9px] uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
-                              {proj.category}
-                            </span>
-                          </div>
-                          <p className="text-slate-600 font-light text-xs sm:text-sm leading-relaxed line-clamp-2">
-                            {proj.tagline || proj.description}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between md:justify-end gap-6 font-mono text-xs text-slate-500 pl-12 md:pl-0">
-                        <div className="text-left md:text-right hidden sm:block">
-                          <span className="text-slate-800 block font-medium">{proj.client}</span>
-                          <span className="text-slate-400 text-[10px]">{proj.year}</span>
-                        </div>
-                        <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-all shadow-2xs">
-                          <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              ) : (
-                /* VIEW MODE 2: BENTO GRID VIEW */
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {ALL_PROJECTS.slice(0, 6).map((proj, idx) => (
-                    <motion.div
-                      key={proj.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.4, delay: idx * 0.05 }}
-                      onClick={() => openProject(proj)}
-                      className="group cursor-pointer bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-2xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
-                    >
-                      <div>
-                        <div className="aspect-[16/10] overflow-hidden bg-slate-100 relative">
-                          <ImageWithFallback
-                            src={proj.imageUrl}
-                            alt={proj.name}
-                            className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
-                          />
-                          <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full font-mono text-[9px] uppercase tracking-widest text-slate-900 border border-slate-200 shadow-2xs">
-                            {proj.category}
-                          </span>
-                          <span className="absolute top-3 right-3 bg-white/95 font-mono text-[10px] text-slate-600 px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs">
-                            {proj.year}
-                          </span>
-                        </div>
-                        <div className="p-6">
-                          <h3 className="font-serif text-2xl text-slate-900 group-hover:text-slate-600 transition-colors mb-2">
-                            {proj.name}
-                          </h3>
-                          <p className="text-slate-600 font-light text-xs leading-relaxed line-clamp-3 mb-4">
-                            {proj.description}
-                          </p>
-                          {proj.metrics && (
-                            <div className="flex items-center gap-2 text-[11px] font-mono text-slate-700 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
-                              <Activity size={12} className="text-slate-900 shrink-0" />
-                              <span className="truncate">{proj.metrics}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="px-6 pb-6 pt-2 border-t border-slate-100 flex flex-wrap gap-1.5">
-                        {proj.tags.slice(0, 3).map((t, ti) => (
-                          <span key={ti} className="font-mono text-[9px] bg-slate-50 text-slate-600 px-2 py-0.5 rounded border border-slate-100">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-
-              {/* Archive Callout Banner */}
-              <div className="mt-12 p-8 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                <div>
-                  <h4 className="font-serif text-2xl text-slate-900">Looking for complete project history?</h4>
-                  <p className="text-slate-600 text-xs sm:text-sm mt-1 font-light">
-                    Access all 30+ enterprise systems, backend modules, mobile releases, and research tools in the complete archive.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setViewMode('projects-page')}
-                  className="px-6 py-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-mono text-xs uppercase font-medium tracking-wider transition-all whitespace-nowrap shadow-xs"
-                >
-                  Explore All 30+ Projects ↗
-                </button>
-              </div>
-            </section>
-
-            {/* ================= INTERACTIVE ARCHITECTURE PIPELINE VISUALIZER ================= */}
-            <section id="pipeline" className="mb-36 scroll-mt-28">
-              <div className="mb-14 border-b border-slate-200 pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                <div>
-                  <div className="flex items-center gap-2 font-mono text-xs text-slate-500 uppercase tracking-[0.3em] mb-2">
-                    <Radio size={14} className="text-emerald-600 animate-pulse" />
-                    <span>System Architecture Blueprint</span>
-                  </div>
-                  <h2 className="font-serif text-4xl sm:text-5xl text-slate-900 tracking-tight">
-                    High-Throughput Request Pipeline
-                  </h2>
-                </div>
-                <p className="text-slate-600 font-light text-xs sm:text-sm max-w-md">
-                  Visual node topology representing how campaign messages and enterprise purchase workflows execute in production.
-                </p>
-              </div>
-
-              {/* Interactive Pipeline Node Graph */}
-              <div className="p-8 sm:p-12 rounded-3xl bg-white border border-slate-200/90 shadow-sm relative overflow-hidden">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
-                  {[
-                    {
-                      step: 1,
-                      title: '1. Client Layer',
-                      subtitle: 'Web / Android Apps',
-                      desc: 'Encrypted HTTPS / REST & WebSocket traffic with JWT auth headers.',
-                      metrics: '< 20ms Edge Latency',
-                      badge: 'Origin'
-                    },
-                    {
-                      step: 2,
-                      title: '2. Gateway & Queue',
-                      subtitle: 'Redis / Reverse Proxy',
-                      desc: 'Rate-limiting, IP whitelisting, and asynchronous job queuing.',
-                      metrics: '1,000+ jobs/sec buffer',
-                      badge: 'Buffer'
-                    },
-                    {
-                      step: 3,
-                      title: '3. Worker Engines',
-                      subtitle: 'PHP / Node.js Clusters',
-                      desc: 'ACID transaction execution, inventory stock locks, and batch segmentation.',
-                      metrics: 'Zero Stock Discrepancy',
-                      badge: 'Core'
-                    },
-                    {
-                      step: 4,
-                      title: '4. Dispatch & Gateways',
-                      subtitle: 'Meta WhatsApp & SMS',
-                      desc: 'Direct Graph API calls, Hutch SMS gateway dispatching, and webhook receipt logger.',
-                      metrics: '200,000+ Delivered',
-                      badge: 'Output'
-                    }
-                  ].map((node, i) => {
-                    const isActive = pipelineStep === node.step;
-                    return (
-                      <motion.div
-                        key={i}
-                        whileHover={{ scale: 1.02 }}
-                        className={`p-6 rounded-2xl border transition-all ${isActive ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 shadow-md' : 'bg-slate-50 border-slate-200/80 hover:bg-white hover:border-slate-300'}`}
-                      >
-                        <div className="flex items-center justify-between font-mono text-[10px] uppercase mb-2">
-                          <span className="font-semibold text-slate-500">{node.badge}</span>
-                          <span className="px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-700">{node.metrics}</span>
-                        </div>
-                        <h3 className="font-serif text-lg font-medium text-slate-900 mb-0.5">{node.title}</h3>
-                        <p className="font-mono text-xs text-slate-500 mb-3">{node.subtitle}</p>
-                        <p className="text-slate-600 text-xs font-light leading-relaxed">{node.desc}</p>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-slate-500">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 size={14} className="text-emerald-600" />
-                    <span>Tested for 99.98% production uptime under 200,000+ customer broadcast surges.</span>
-                  </div>
-                  <button
-                    onClick={runTrafficSimulation}
-                    className="text-slate-900 underline underline-offset-4 hover:opacity-75 font-semibold"
-                  >
-                    Trigger Test Packet ⚡
-                  </button>
-                </div>
-              </div>
-            </section>
-
-            {/* ================= CODE SNIPPETS & ARCHITECTURE PLAYGROUND ================= */}
-            <section id="snippets" className="mb-36 scroll-mt-28">
-              <div className="mb-14 border-b border-slate-200 pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                <div>
-                  <div className="flex items-center gap-2 font-mono text-xs text-slate-500 uppercase tracking-[0.3em] mb-2">
-                    <Code2 size={14} className="text-slate-900" />
-                    <span>Behind The Architecture</span>
-                  </div>
-                  <h2 className="font-serif text-4xl sm:text-5xl text-slate-900 tracking-tight">
-                    Code Snippets &amp; Architectural Blueprints
-                  </h2>
-                </div>
-                <p className="text-slate-600 font-light text-xs sm:text-sm max-w-md">
-                  Inspect real backend logic, asynchronous worker loops, and machine learning inference pipelines.
-                </p>
-              </div>
-
-              {/* Snippets Container */}
-              <div className="grid lg:grid-cols-12 gap-8 items-start">
-                
-                {/* Left Tabs */}
-                <div className="lg:col-span-4 space-y-3">
-                  {CODE_SNIPPETS.map((snip, idx) => (
-                    <button
-                      key={snip.id}
-                      onClick={() => { sfx.playBlip(530); setActiveCodeSnippet(idx); setIsSimulatingCode(false); }}
-                      className={`w-full text-left p-5 rounded-2xl transition-all border ${activeCodeSnippet === idx ? 'bg-white border-slate-900 shadow-sm' : 'bg-slate-50 border-slate-200/80 text-slate-600 hover:bg-white hover:border-slate-300'}`}
-                    >
-                      <div className="flex items-center justify-between font-mono text-[10px] uppercase text-slate-400 mb-1">
-                        <span>{snip.lang}</span>
-                        <span className="text-slate-900 font-semibold">{snip.domain}</span>
-                      </div>
-                      <h4 className="font-mono text-sm font-semibold text-slate-900">{snip.title}</h4>
-                      <p className="text-slate-600 text-xs font-light mt-1 line-clamp-2">{snip.desc}</p>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Right Code Viewer */}
-                <div className="lg:col-span-8 rounded-3xl bg-slate-950 border border-slate-800 overflow-hidden shadow-xl text-slate-200">
-                  <div className="flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800">
-                    <div className="flex items-center gap-3">
-                      <div className="flex gap-1.5">
-                        <span className="w-3 h-3 rounded-full bg-rose-500/80" />
-                        <span className="w-3 h-3 rounded-full bg-amber-500/80" />
-                        <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
-                      </div>
-                      <span className="font-mono text-xs text-slate-300 ml-2">
-                        {CODE_SNIPPETS[activeCodeSnippet].title}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
-                          setIsSimulatingCode(!isSimulatingCode);
-                          sfx.playBlip(620);
-                        }}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[11px] transition-all border ${isSimulatingCode ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300'}`}
-                      >
-                        <Play size={11} />
-                        <span>{isSimulatingCode ? 'Hide Output' : 'Test Output'}</span>
-                      </button>
-
-                      <button
-                        onClick={() => copyToClipboard(CODE_SNIPPETS[activeCodeSnippet].code, 'code')}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white font-mono text-[11px] transition-all"
-                      >
-                        {copiedCode ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
-                        <span>{copiedCode ? 'Copied' : 'Copy'}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="p-6 overflow-x-auto max-h-[460px] font-mono text-xs leading-relaxed text-slate-200">
-                    <pre>
-                      <code>{CODE_SNIPPETS[activeCodeSnippet].code}</code>
-                    </pre>
-                  </div>
-
-                  {/* Simulated Terminal Execution Output Console */}
-                  <AnimatePresence>
-                    {isSimulatingCode && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-slate-800 bg-black/70 p-5 font-mono text-[11px] text-emerald-400"
-                      >
-                        <div className="flex items-center gap-2 text-slate-500 text-[10px] uppercase mb-2">
-                          <Terminal size={11} />
-                          <span>Simulation Output Console</span>
-                        </div>
-                        <pre className="whitespace-pre-line leading-relaxed">
-                          {CODE_SNIPPETS[activeCodeSnippet].simulatedOutput}
-                        </pre>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-              </div>
-            </section>
-
-            {/* ================= TECHNICAL STACK & COMPETENCIES ================= */}
-            <section id="stack" className="mb-36 scroll-mt-28">
-              <div className="mb-14 border-b border-slate-200 pb-8">
-                <div className="flex items-center gap-2 font-mono text-xs text-slate-500 uppercase tracking-[0.3em] mb-2">
-                  <Cpu size={14} className="text-slate-900" />
-                  <span>Technical Competencies</span>
-                </div>
-                <h2 className="font-serif text-4xl sm:text-5xl text-slate-900 tracking-tight">
-                  Systems Architecture &amp; Skill Matrix
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                  {
-                    icon: <Server className="text-slate-900 mb-4" size={26} />,
-                    title: 'Backend & APIs',
-                    desc: 'High-concurrency microservices, secure webhooks, and asynchronous message processing.',
-                    items: ['PHP 8.x REST APIs', 'Node.js & Express', 'Java / Spring Boot', 'Python Fast-Inference', 'Meta WhatsApp Cloud API', 'Hutch / Dialog SMS APIs']
-                  },
-                  {
-                    icon: <Smartphone className="text-slate-900 mb-4" size={26} />,
-                    title: 'Android Mobile',
-                    desc: 'Native reactive architectures built with modern declarative toolkits and local storage.',
-                    items: ['Android SDK (API 34+)', 'Kotlin & Java', 'Jetpack Compose', 'Room Database', 'Kotlin Coroutines', 'Firebase Cloud Services']
-                  },
-                  {
-                    icon: <Database className="text-slate-900 mb-4" size={26} />,
-                    title: 'Databases & Storage',
-                    desc: 'Relational data modeling, schema indexing, caching layers, and transaction isolation.',
-                    items: ['MySQL & Relational Schema', 'MongoDB NoSQL', 'Redis In-Memory Cache', 'MSSQL Integration', 'ACID Transaction Design', 'Database Query Tuning']
-                  },
-                  {
-                    icon: <ShieldCheck className="text-slate-900 mb-4" size={26} />,
-                    title: 'DevOps & Tooling',
-                    desc: 'Deployment orchestration, reverse proxies, media transcoding pipelines, and testing.',
-                    items: ['Linux Server Administration', 'cPanel & Hostinger', 'FFmpeg Transcoding', 'Postman API Testing', 'Git & CI/CD Workflows', 'REST / OAuth2 Security']
-                  }
-                ].map((col, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: i * 0.06 }}
-                    className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-2xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
-                  >
-                    <div>
-                      {col.icon}
-                      <h3 className="font-serif text-xl text-slate-900 font-medium mb-2">{col.title}</h3>
-                      <p className="text-slate-600 text-xs font-light leading-relaxed mb-6">{col.desc}</p>
-                    </div>
-
-                    <ul className="space-y-2 font-mono text-xs text-slate-600 border-t border-slate-100 pt-4">
-                      {col.items.map((it, ii) => (
-                        <li key={ii} className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
-                          <span>{it}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </motion.div>
-                ))}
-              </div>
-            </section>
-
-            {/* ================= PROFESSIONAL EXPERIENCE JOURNEY ================= */}
-            <section id="experience" className="mb-36 scroll-mt-28">
-              <div className="mb-14 border-b border-slate-200 pb-8">
-                <div className="flex items-center gap-2 font-mono text-xs text-slate-500 uppercase tracking-[0.3em] mb-2">
-                  <Activity size={14} className="text-slate-900" />
-                  <span>Production Impact</span>
-                </div>
-                <h2 className="font-serif text-4xl sm:text-5xl text-slate-900 tracking-tight">
-                  Professional Experience
-                </h2>
-              </div>
-
-              <div className="max-w-4xl space-y-8">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="p-8 sm:p-10 rounded-3xl bg-white border border-slate-200/80 shadow-xs relative overflow-hidden"
-                >
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 pb-6 border-b border-slate-100">
-                    <div>
-                      <span className="font-mono text-xs text-slate-500 uppercase tracking-widest block mb-1">
-                        ASB Fashion (Pvt) Ltd • IT Department
-                      </span>
-                      <h3 className="font-serif text-2xl sm:text-3xl text-slate-900">
-                        Software Engineer (Associate &amp; Intern)
-                      </h3>
-                    </div>
-                    <span className="font-mono text-xs bg-slate-100 text-slate-800 px-4 py-1.5 rounded-full border border-slate-200 whitespace-nowrap">
-                      Nov 2025 – Sept 2026
-                    </span>
-                  </div>
-
-                  <div className="space-y-4 text-slate-600 font-light text-sm sm:text-base leading-relaxed">
-                    <p>
-                      Spearheaded internal system development, backend API design, database architecture, and campaign marketing engines across retail and enterprise departments.
-                    </p>
-                    
-                    <div className="grid sm:grid-cols-2 gap-4 pt-2">
-                      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1.5">
-                        <h4 className="font-mono text-xs font-semibold text-slate-900">Broadcast Management Platform</h4>
-                        <p className="text-slate-600 text-xs font-light">
-                          Designed the high-throughput SMS &amp; Meta WhatsApp campaign gateway serving over 200,000+ active loyalty customers.
-                        </p>
-                      </div>
-
-                      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1.5">
-                        <h4 className="font-mono text-xs font-semibold text-slate-900">Purchasing Order Management System</h4>
-                        <p className="text-slate-600 text-xs font-light">
-                          Engineered end-to-end procurement workflows, role-based approvals, and quality inspection pipelines.
-                        </p>
-                      </div>
-
-                      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1.5">
-                        <h4 className="font-mono text-xs font-semibold text-slate-900">Official Brand Web Platform</h4>
-                        <p className="text-slate-600 text-xs font-light">
-                          Developed the modern digital web storefront with online gift voucher purchasing and high SEO optimization.
-                        </p>
-                      </div>
-
-                      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1.5">
-                        <h4 className="font-mono text-xs font-semibold text-slate-900">Loyal Vault Point Engine</h4>
-                        <p className="text-slate-600 text-xs font-light">
-                          Integrated fast sub-40ms point calculations and promotion validations with physical checkout POS systems.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            </section>
-
-            {/* ================= ABOUT & ACADEMIC FOUNDATION ================= */}
-            <section id="about" className="mb-36 scroll-mt-28">
-              <div className="grid lg:grid-cols-12 gap-12 items-center p-8 sm:p-12 md:p-16 rounded-3xl bg-white border border-slate-200/80 shadow-xs">
-                <div className="lg:col-span-7">
-                  <div className="flex items-center gap-2 font-mono text-xs text-slate-500 uppercase tracking-[0.3em] mb-2">
-                    <Award size={14} className="text-slate-900" />
-                    <span>Background &amp; Education</span>
-                  </div>
-                  <h2 className="font-serif text-3xl sm:text-5xl text-slate-900 mt-2 mb-6">
-                    Disciplined foundation, continuous engineering growth.
-                  </h2>
-                  <p className="text-slate-600 font-light text-sm sm:text-base leading-relaxed mb-8">
-                    Based in Colombo, Sri Lanka, my educational journey began at Mahanama College, Colombo 03, shaping my analytical discipline and physical science foundation before diving deep into software engineering and distributed systems.
-                  </p>
-
-                  <div className="space-y-4 border-t border-slate-100 pt-6">
-                    <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                      <div>
-                        <h4 className="font-serif text-xl text-slate-900">BSc (Hons) Software Engineering</h4>
-                        <p className="font-mono text-xs text-slate-500 uppercase">University of Bedfordshire, UK</p>
-                      </div>
-                      <span className="font-mono text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 w-max">
-                        Completed (Awaiting Graduation)
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pt-3 border-t border-slate-100">
-                      <div>
-                        <h4 className="font-serif text-xl text-slate-900">Higher Diploma in IT (HDIT)</h4>
-                        <p className="font-mono text-xs text-slate-500 uppercase">SLIIT City University, Colombo 03</p>
-                      </div>
-                      <span className="font-mono text-xs text-slate-500">2023 – 2026</span>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pt-3 border-t border-slate-100">
-                      <div>
-                        <h4 className="font-serif text-xl text-slate-900">Secondary Education (A/L &amp; O/L Physical Science)</h4>
-                        <p className="font-mono text-xs text-slate-500 uppercase">Mahanama College, Colombo 03</p>
-                      </div>
-                      <span className="font-mono text-xs text-slate-500">Alumni</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="lg:col-span-5 relative aspect-[4/5] rounded-3xl overflow-hidden bg-slate-100 border border-slate-200 group shadow-inner">
-                  <ImageWithFallback
-                    src="/my-photo.jpg"
-                    alt="Kavindu Bogahawatte"
-                    className="w-full h-full object-cover grayscale contrast-110 group-hover:grayscale-0 group-hover:scale-103 transition-all duration-700"
-                    fallback="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
-                  <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200 font-mono text-xs shadow-md">
-                    <p className="text-slate-900 font-semibold">Kavindu Bogahawatte</p>
-                    <p className="text-slate-500 text-[11px]">Software Engineer • Colombo, LK</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* ================= INTERACTIVE FAQ ACCORDION ================= */}
-            <section id="faq" className="mb-36 scroll-mt-28">
-              <div className="mb-14 border-b border-slate-200 pb-8">
-                <div className="flex items-center gap-2 font-mono text-xs text-slate-500 uppercase tracking-[0.3em] mb-2">
-                  <MessageSquare size={14} className="text-slate-900" />
-                  <span>Frequently Asked Questions</span>
-                </div>
-                <h2 className="font-serif text-4xl sm:text-5xl text-slate-900 tracking-tight">
-                  Architecture, Scaling &amp; Collaboration FAQs
-                </h2>
-              </div>
-
-              <div className="space-y-4 max-w-4xl">
-                {FAQS.map((faq, idx) => {
-                  const isOpen = openFaqIndex === idx;
-                  return (
-                    <div
-                      key={idx}
-                      className="rounded-2xl bg-white border border-slate-200/80 shadow-2xs overflow-hidden transition-all"
-                    >
-                      <button
-                        onClick={() => { sfx.playBlip(510); setOpenFaqIndex(isOpen ? null : idx); }}
-                        className="w-full p-6 text-left flex items-center justify-between gap-4 font-serif text-xl sm:text-2xl text-slate-900 hover:text-slate-600 transition-colors"
-                      >
-                        <span>{faq.q}</span>
-                        <ChevronDown
-                          size={20}
-                          className={`text-slate-900 transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180' : ''}`}
-                        />
-                      </button>
-
-                      <AnimatePresence>
-                        {isOpen && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="px-6 pb-6 text-slate-600 font-light text-sm sm:text-base leading-relaxed border-t border-slate-100 pt-4">
-                              {faq.a}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* ================= CONTACT & COLLABORATION ================= */}
-            <section id="contact" className="scroll-mt-28">
-              <div className="relative p-10 sm:p-16 md:p-20 rounded-3xl bg-slate-900 text-white text-center max-w-5xl mx-auto shadow-2xl overflow-hidden">
-                <div className="relative z-10 max-w-2xl mx-auto">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-slate-200 font-mono text-[11px] uppercase tracking-wider mb-4">
-                    <Zap size={12} className="text-amber-400" />
-                    <span>Direct Engineering Connection</span>
-                  </div>
-
-                  <h2 className="font-serif text-4xl sm:text-6xl text-white tracking-tight mb-4">
-                    Let&apos;s architect robust infrastructure together.
-                  </h2>
-
-                  <p className="text-slate-300 font-light text-sm sm:text-base leading-relaxed mb-10">
-                    Available for backend architectural consulting, full-time software engineering roles, mobile development, and specialized API integrations.
-                  </p>
-
-                  <div className="flex flex-wrap justify-center gap-4">
-                    <button
-                      onClick={() => { sfx.playBlip(560); setContactModalOpen(true); }}
-                      className="px-8 py-4 rounded-full bg-white hover:bg-slate-100 text-slate-900 font-mono text-xs uppercase font-bold tracking-widest transition-all shadow-lg active:scale-95"
-                    >
-                      Send Direct Message
-                    </button>
-
-                    <a
-                      href="https://wa.me/94740890730"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-8 py-4 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono text-xs uppercase tracking-widest transition-all flex items-center gap-2"
-                    >
-                      <WhatsAppIcon /> WhatsApp (+94 74 089 0730)
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-          </main>
-        </>
+        </div>
       )}
 
-      {/* ================= FOOTER ================= */}
-      <footer className="border-t border-slate-200 bg-white py-14 px-4 sm:px-8 md:px-14 relative z-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 font-mono text-xs text-slate-500">
-          <div>
-            <p className="text-slate-800 font-medium">© {new Date().getFullYear()} Kavindu Bogahawatte. Backend Systems Architect &amp; Mobile Engineer.</p>
-            <p className="text-slate-400 text-[11px] mt-1">Crafted with Next.js Turbopack &amp; Tailwind CSS • Colombo, LK</p>
+      <dialog ref={dlg} onClose={() => setActive(null)} onClick={(e) => { if (e.target === dlg.current) setActive(null); }}>
+        <button className="x" onClick={() => setActive(null)} aria-label="Close">×</button>
+        {p && (
+          <div className="dm" style={{ "--ac": ACC[p.k] || ACC.bc } as React.CSSProperties}>
+            <Scene k={p.k} />
+            <div className="b"><small>{p.y}</small><h3>{p.n}</h3><p className="dd">{p.d}</p><ul>{p.pts.map((x) => <li key={x}>{x}</li>)}</ul><div className="tg">{p.tags.map((t) => <i key={t}>{t}</i>)}</div></div>
           </div>
-
-          <div className="flex items-center gap-8">
-            <a
-              href="https://linkedin.com/in/kavindu-bogahawatte-7b3810320"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-slate-900 transition-colors flex items-center gap-1.5"
-            >
-              <LinkedinIcon /> LinkedIn
-            </a>
-            <a
-              href="https://github.com/kavizzz03"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-slate-900 transition-colors flex items-center gap-1.5"
-            >
-              <GithubIcon /> GitHub
-            </a>
-            <button
-              onClick={() => copyToClipboard('kavindumalshan2003@gmail.com', 'email')}
-              className="hover:text-slate-900 transition-colors flex items-center gap-1.5"
-            >
-              <Mail size={16} /> Email
-            </button>
-          </div>
-        </div>
-      </footer>
-
-      {/* ================= SIGNATURE FLOATING ACTION DOCK ================= */}
-      <div className="fixed bottom-6 right-6 z-[80] flex flex-col items-end gap-3">
-        {/* Floating Action Menu */}
-        <div className="flex items-center gap-2 p-1.5 rounded-full bg-white/95 border border-slate-200 shadow-xl backdrop-blur-md">
-          <button
-            onClick={toggleSound}
-            aria-label="Toggle Sound Effects"
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${soundEnabled ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-500 hover:text-slate-900'}`}
-            title={soundEnabled ? 'Mute audio' : 'Enable sound FX'}
-          >
-            {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-          </button>
-
-          <a
-            href="https://wa.me/94740890730"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Connect on WhatsApp"
-            className="w-10 h-10 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white flex items-center justify-center transition-all"
-            title="Chat on WhatsApp"
-          >
-            <WhatsAppIcon />
-          </a>
-
-          <button
-            onClick={() => copyToClipboard('kavindumalshan2003@gmail.com', 'email')}
-            aria-label="Copy Email"
-            className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 flex items-center justify-center transition-all"
-            title="Copy Email Address"
-          >
-            {copiedEmail ? <Check size={16} className="text-emerald-600" /> : <Mail size={16} />}
-          </button>
-
-          <button
-            onClick={() => { sfx.playBlip(540); setContactModalOpen(true); }}
-            aria-label="Open Contact Form"
-            className="px-4 h-10 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-mono text-xs font-medium uppercase tracking-wider flex items-center gap-2 shadow-xs transition-all"
-          >
-            <Send size={13} />
-            <span className="hidden sm:inline">Connect</span>
-          </button>
-
-          <button
-            onClick={() => scrollToTop()}
-            aria-label="Scroll to top"
-            className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 flex items-center justify-center transition-all"
-            title="Scroll to Top"
-          >
-            ↑
-          </button>
-        </div>
-      </div>
-
-      {/* ================= PROJECT DEEP-DIVE MODAL ================= */}
-      <AnimatePresence>
-        {selectedProject && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-            onClick={closeProject}
-          >
-            <motion.div
-              initial={{ scale: 0.96, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.96, opacity: 0, y: 15 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white border border-slate-200 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col"
-            >
-              {/* Modal Header Bar */}
-              <div className="sticky top-0 z-20 flex items-center justify-between px-6 py-4 bg-white/95 backdrop-blur-md border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-[10px] uppercase tracking-widest px-3 py-1 bg-slate-100 text-slate-800 border border-slate-200 rounded-full">
-                    {selectedProject.category}
-                  </span>
-                  <span className="font-mono text-xs text-slate-400">• {selectedProject.year}</span>
-                </div>
-                <button
-                  onClick={closeProject}
-                  className="p-2 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
-                  aria-label="Close modal"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Modal Body Content */}
-              <div className="p-6 sm:p-10 space-y-8">
-                <div>
-                  <h2 className="font-serif text-3xl sm:text-4xl text-slate-900 tracking-tight mb-2">
-                    {selectedProject.name}
-                  </h2>
-                  <p className="text-slate-500 font-mono text-xs mb-3">{selectedProject.tagline}</p>
-                  <p className="text-slate-600 font-light text-base sm:text-lg leading-relaxed">
-                    {selectedProject.description}
-                  </p>
-                </div>
-
-                {/* Main Media Preview with Zoom */}
-                <div className="aspect-[16/9] rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 relative group shadow-inner">
-                  <ImageWithFallback src={activeImage} alt={selectedProject.name} className="w-full h-full object-cover" />
-                  <button
-                    onClick={() => { sfx.playBlip(560); setLightboxOpen(true); }}
-                    className="absolute bottom-4 right-4 px-3.5 py-2 rounded-xl bg-white/90 backdrop-blur-md text-slate-800 border border-slate-200 hover:bg-slate-900 hover:text-white transition-all shadow-xs flex items-center gap-2 font-mono text-xs"
-                  >
-                    <Maximize2 size={13} /> Fullscreen
-                  </button>
-                </div>
-
-                {/* Details Breakdown */}
-                <div className="grid md:grid-cols-3 gap-8 pt-4 border-t border-slate-100">
-                  <div className="md:col-span-2 space-y-6">
-                    <div>
-                      <h3 className="font-mono text-xs uppercase tracking-widest text-slate-400 mb-3">
-                        Key Architectural Deliverables
-                      </h3>
-                      <ul className="space-y-3">
-                        {selectedProject.architecturePoints.map((pt, i) => (
-                          <li key={i} className="flex items-start gap-3 text-sm text-slate-700 font-light leading-relaxed">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-900 mt-2 shrink-0" />
-                            <span>{pt}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {selectedProject.codePreview && (
-                      <div>
-                        <h3 className="font-mono text-xs uppercase tracking-widest text-slate-400 mb-2">
-                          Core Logic Snippet
-                        </h3>
-                        <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-200 overflow-x-auto">
-                          <pre><code>{selectedProject.codePreview}</code></pre>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Sidebar Metadata */}
-                  <div className="space-y-6">
-                    <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-4">
-                      <div>
-                        <h4 className="font-mono text-[10px] uppercase text-slate-400 tracking-wider">Client &amp; Context</h4>
-                        <p className="font-serif text-base text-slate-900 mt-1">{selectedProject.client}</p>
-                      </div>
-
-                      {selectedProject.metrics && (
-                        <div>
-                          <h4 className="font-mono text-[10px] uppercase text-slate-400 tracking-wider">Impact &amp; Metrics</h4>
-                          <p className="font-mono text-xs text-emerald-700 font-medium mt-1">{selectedProject.metrics}</p>
-                        </div>
-                      )}
-
-                      <div>
-                        <h4 className="font-mono text-[10px] uppercase text-slate-400 tracking-wider mb-2">Tech Stack</h4>
-                        <div className="flex flex-wrap gap-1.5">
-                          {selectedProject.tags.map((t, i) => (
-                            <span key={i} className="font-mono text-[10px] bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded">
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
         )}
-      </AnimatePresence>
+      </dialog>
 
-      {/* ================= FULLSCREEN IMAGE LIGHTBOX ================= */}
-      <AnimatePresence>
-        {lightboxOpen && selectedProject && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[120] bg-white/95 backdrop-blur-md flex items-center justify-center p-4"
-            onClick={() => setLightboxOpen(false)}
-          >
-            <button
-              onClick={() => setLightboxOpen(false)}
-              className="absolute top-6 right-6 p-3 rounded-full bg-slate-100 text-slate-800 hover:bg-slate-900 hover:text-white transition-colors"
-            >
-              <X size={20} />
-            </button>
-            <ImageWithFallback
-              src={activeImage}
-              alt="Fullscreen preview"
-              className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-slate-200"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ================= INTERACTIVE CONTACT MODAL ================= */}
-      <AnimatePresence>
-        {contactModalOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-            onClick={() => setContactModalOpen(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.96, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.96, opacity: 0, y: 15 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-8 shadow-2xl relative"
-            >
-              <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
-                <div>
-                  <h3 className="font-serif text-3xl text-slate-900">Send a Message</h3>
-                  <p className="font-mono text-xs text-slate-500 mt-1">kavindumalshan2003@gmail.com</p>
-                </div>
-                <button
-                  onClick={() => setContactModalOpen(false)}
-                  className="p-2 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {formSent ? (
-                <div className="text-center py-10 space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-                    <Check size={24} />
-                  </div>
-                  <h4 className="font-serif text-2xl text-slate-900">Launching Mail Client</h4>
-                  <p className="text-slate-500 text-xs font-mono">Your message draft is ready to send.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleContactSubmit} className="space-y-4">
-                  <div>
-                    <label className="block font-mono text-[11px] uppercase text-slate-500 mb-1.5">Your Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={contactName}
-                      onChange={(e) => setContactName(e.target.value)}
-                      placeholder="e.g. Christoph Nagel"
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-slate-900 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-mono text-[11px] uppercase text-slate-500 mb-1.5">Email Address</label>
-                    <input
-                      type="email"
-                      required
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      placeholder="you@company.com"
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-slate-900 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-mono text-[11px] uppercase text-slate-500 mb-1.5">Message / Project Scope</label>
-                    <textarea
-                      required
-                      rows={4}
-                      value={contactMessage}
-                      onChange={(e) => setContactMessage(e.target.value)}
-                      placeholder="Describe your backend, API, or mobile project requirements..."
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-slate-900 transition-colors resize-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95"
-                  >
-                    Send Inquiry →
-                  </button>
-                </form>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className={`toast${toast ? " on" : ""}`} role="status">{toast}</div>
 
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-        .font-sans { font-family: 'Inter', sans-serif; }
-        .font-serif { font-family: 'Instrument Serif', serif; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        html { scroll-behavior: smooth; }
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;700&family=Fira+Code:wght@400;500&family=Noto+Sans+Sinhala:wght@700&family=Noto+Sans+Tamil:wght@700&display=swap');
+
+:root{color-scheme:light;--bg:#F6F5FF;--ink:#14112B;--mute:#5E5A7A;--line:#E1DDF5;--v:#6C47FF;--lime:#C8F53C;--pink:#FF7AB6;--p1:#E3DCFF;--p2:#D3F6E9;--p3:#FFF0B8;--p4:#FFD9E6;--sp:0}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.65 'Manrope',system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:'Unbounded','Manrope',sans-serif;margin:0;line-height:1.05;letter-spacing:-.04em}
+a{color:inherit}.w{max-width:1180px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+:focus-visible{outline:3px solid var(--v);outline-offset:3px;border-radius:8px}
+.sprog{position:fixed;left:0;top:0;height:4px;width:100%;background:linear-gradient(90deg,var(--v),var(--pink),var(--lime));transform-origin:0 50%;transform:scaleX(var(--sp));z-index:300}
+
+/* cursor */
+.cursor{position:fixed;left:0;top:0;z-index:290;pointer-events:none;opacity:0}.cursor i{display:block;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:2px solid var(--v);transition:transform .25s,background .25s}
+.cursor.big i{transform:scale(1.9);background:#6C47FF22}
+@media(hover:none){.cursor{display:none}}
+
+/* soft moving colour blobs */
+.blobs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.blobs i{position:absolute;border-radius:50%;filter:blur(80px);opacity:.55;animation:drift 38s ease-in-out infinite alternate}
+.blobs i:nth-child(1){width:520px;height:520px;left:-8%;top:-8%;background:#D9CEFF}.blobs i:nth-child(2){width:460px;height:460px;right:-6%;top:30%;background:#FFD1E4;animation-duration:50s}.blobs i:nth-child(3){width:480px;height:480px;left:30%;bottom:-16%;background:#DDF9A8;animation-duration:44s}
+@keyframes drift{to{transform:translate(80px,60px) scale(1.15)}}
+
+/* floating pill nav */
+.pill{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:99px;background:#ffffffcc;backdrop-filter:blur(14px);border:1px solid var(--line);box-shadow:0 14px 34px -20px #6C47FF88}
+.pill a{text-decoration:none;font-weight:500;font-size:14px;padding:8px 14px;border-radius:99px;transition:background .2s}.pill a:hover{background:var(--p1)}
+.pill .logo{font:800 16px 'Unbounded';padding:8px 14px;background:var(--ink);color:#fff}.pill .logo span{color:var(--lime)}.pill .logo:hover{background:var(--v)}
+.kbd{font:500 12px 'Fira Code';border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--mute)}
+.burger{display:none;width:38px;height:38px;border-radius:50%;border:0;background:var(--p1);cursor:pointer}
+@media(max-width:700px){.pill a:not(.logo){display:none}.kbd{display:none}.burger{display:block}}
+.mm{position:fixed;top:72px;left:16px;right:16px;z-index:99;display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:22px;padding:8px;animation:fi .25s both}.mm a{padding:14px 16px;text-decoration:none;font-weight:700;border-radius:14px}.mm a:active{background:var(--p1)}
+
+.btn{display:inline-block;padding:15px 28px;border-radius:99px;background:var(--ink);color:#fff;font:700 15px 'Manrope';text-decoration:none;border:2px solid var(--ink);cursor:pointer;transition:transform .15s ease-out,background .2s,color .2s}
+.btn:hover{background:var(--v);border-color:var(--v)}.btn.o{background:transparent;color:var(--ink)}.btn.o:hover{color:#fff}.btn.lime{background:var(--lime);color:var(--ink);border-color:var(--lime)}.btn.lime:hover{background:#fff;border-color:#fff;color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:12px}
+
+/* hero */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;padding:110px 0 70px;overflow:hidden}
+.net{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.hg{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;width:100%}@media(max-width:940px){.hg{grid-template-columns:1fr}.hero{padding-top:100px}}
+.avail{display:inline-flex;align-items:center;gap:10px;padding:8px 16px 8px 12px;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:14px;font-weight:700;margin-bottom:22px}
+.avail i{width:9px;height:9px;border-radius:50%;background:#00A67E;animation:ping 2s infinite}@keyframes ping{0%{box-shadow:0 0 0 0 #00A67E99}70%,100%{box-shadow:0 0 0 10px #00A67E00}}
+h1{font-weight:800;font-size:clamp(46px,9.4vw,120px)}
+h1 span{display:block}.l1{color:var(--ink)}.l2{font-size:.62em;color:transparent;-webkit-text-stroke:2px var(--ink);margin-top:.08em;letter-spacing:-.03em}
+.role{font:700 clamp(20px,2.4vw,28px)/1.25 'Unbounded';letter-spacing:-.03em;margin:24px 0 14px;max-width:560px}.role u{text-decoration:none;background:linear-gradient(var(--lime),var(--lime)) 0 90%/100% .45em no-repeat}
+.intro{color:var(--mute);max-width:500px;margin:0 0 14px}.typed{font:500 14px 'Fira Code';margin:0 0 26px}.typed b{color:var(--v);font-weight:500;border-right:2px solid var(--v);padding-right:3px;animation:bl 1s steps(1) infinite}@keyframes bl{50%{border-color:transparent}}
+.hl>*{opacity:0;transform:translateY(24px)}.go .hl>*{animation:in .8s cubic-bezier(.2,.8,.2,1) forwards}
+.go .hl>:nth-child(2){animation-delay:.1s}.go .hl>:nth-child(3){animation-delay:.25s}.go .hl>:nth-child(4){animation-delay:.35s}.go .hl>:nth-child(5){animation-delay:.45s}.go .hl>:nth-child(6){animation-delay:.55s}
+@keyframes in{to{opacity:1;transform:none}}@keyframes fi{from{opacity:0}to{opacity:1}}
+
+/* portrait with orbiting tech + floating code window */
+.hr{position:relative;height:580px;display:grid;place-items:center;opacity:0}.go .hr{animation:fi 1s .4s forwards}@media(max-width:940px){.hr{height:500px}}
+.pf{position:relative;width:330px;height:410px;transition:transform .25s ease-out;z-index:1}
+.ring{position:absolute;inset:0;transform:translate(22px,22px);border-radius:63% 37% 54% 46%/55% 48% 52% 45%;background:var(--lime);animation:morph 10s ease-in-out infinite}
+.tag{position:absolute;right:-18px;top:26px;background:#fff;border:1px solid var(--line);font-weight:700;font-size:13px;padding:8px 14px;border-radius:99px;box-shadow:0 12px 24px -12px #6C47FF99;animation:bob 6s ease-in-out infinite;z-index:3}
+.ph{position:absolute;inset:0;border-radius:63% 37% 54% 46%/55% 48% 52% 45%;background:linear-gradient(135deg,var(--v),var(--pink));overflow:hidden;display:grid;place-items:center;animation:morph 10s ease-in-out infinite;box-shadow:0 30px 60px -30px #6C47FF99}
+.ph img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}.ph b{font:800 76px 'Unbounded';color:#fff;letter-spacing:-.06em}
+@keyframes morph{50%{border-radius:40% 60% 38% 62%/48% 56% 44% 52%}}
+.orbit{position:absolute;width:520px;height:520px;border-radius:50%;border:1.5px dashed #6C47FF55;animation:spin 40s linear infinite}@media(max-width:520px){.orbit{width:360px;height:360px}.pf{width:230px;height:290px}}
+.ob{position:absolute;left:50%;top:50%;transform:rotate(var(--a)) translateY(-260px)}@media(max-width:520px){.ob{transform:rotate(var(--a)) translateY(-180px)}.tag{right:-6px}}
+.ob em{display:block;font:700 13px 'Manrope';padding:7px 14px;border-radius:99px;background:#fff;border:1px solid var(--line);box-shadow:0 8px 18px -10px #6C47FF88;transform:translate(-50%,-50%) rotate(calc(var(--a) * -1));animation:unspin 40s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes unspin{to{transform:translate(-50%,-50%) rotate(calc(var(--a) * -1 - 360deg))}}
+.code{position:absolute;left:-14px;bottom:-14px;width:min(340px,92%);background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 30px 50px -28px #14112B66;overflow:hidden;animation:bob 7s ease-in-out infinite;z-index:2}
+@keyframes bob{50%{transform:translateY(-10px)}}
+.cb{display:flex;align-items:center;gap:6px;padding:10px 12px;background:#F1EFFC}.cb i{width:9px;height:9px;border-radius:50%;background:#CFC9EC}.cb span{margin-left:8px;font:400 11px 'Fira Code';color:var(--mute)}
+.code pre{margin:0;padding:12px 14px;font:400 11.5px/1.7 'Fira Code',monospace;color:var(--ink);overflow:hidden}
+.code pre span{display:block;opacity:0;transform:translateX(-8px);white-space:pre}.go .code pre span{animation:in .5s var(--d) forwards}
+.code s{text-decoration:none;color:var(--v);font-weight:500}.code q{quotes:none;color:#00835F}
+@media(max-width:940px){.code{left:0}}
+
+.av{display:block;width:92px;height:92px;border-radius:50%;object-fit:cover;border:4px solid var(--lime);margin-bottom:20px;box-shadow:0 14px 30px -14px #000}
+.lav{width:96px;height:96px;border-radius:50%;object-fit:cover;border:4px solid var(--lime);animation:bob 3s ease-in-out infinite}
+/* marquee */
+.mq{overflow:hidden;padding:14px 0;background:var(--ink);position:relative;z-index:1;transform:rotate(-1.2deg) scale(1.03);margin:10px 0}
+.mq div{display:flex;gap:14px;width:max-content;animation:mq 45s linear infinite}.mq span{padding:6px 18px;border-radius:99px;border:1.5px solid #ffffff44;color:#fff;font:500 15px 'Manrope'}.mq span:nth-child(3n){background:var(--lime);color:var(--ink);border-color:var(--lime)}
+@keyframes mq{to{transform:translateX(-50%)}}
+section{padding:110px 0 20px}
+h2{font-size:clamp(30px,5vw,60px);font-weight:800;margin-bottom:16px;max-width:820px}.sub{color:var(--mute);max-width:520px;margin:0 0 40px}
+
+/* reveals */
+.rv{opacity:0;transform:translateY(34px) scale(.98);transition:opacity .8s cubic-bezier(.2,.8,.2,1),transform .8s cubic-bezier(.2,.8,.2,1)}.rv.on{opacity:1;transform:none}
+.wipe{opacity:1;transform:none;clip-path:inset(0 100% 0 0);transition:clip-path 1s cubic-bezier(.7,0,.2,1)}.wipe.on{clip-path:inset(0 0 0 0)}
+
+/* talent */
+.power{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:40px 0 16px}@media(max-width:860px){.power{grid-template-columns:1fr}}
+.pw{padding:28px;border-radius:26px;background:var(--ink);color:#fff;position:relative;overflow:hidden}.pw:nth-child(2){background:var(--v)}.pw:nth-child(3){background:#fff;color:var(--ink);border:1px solid var(--line)}
+.pw h3{font-size:22px;margin-bottom:10px}.pw p{margin:0;opacity:.85;font-size:15px}
+.nums{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}@media(max-width:860px){.nums{grid-template-columns:1fr 1fr}}@media(max-width:480px){.nums{grid-template-columns:1fr}}
+.num{padding:24px;border-radius:26px;display:flex;flex-direction:column;gap:8px;min-height:150px;justify-content:space-between}.num:nth-child(1){background:var(--p1)}.num:nth-child(2){background:var(--p3)}.num:nth-child(3){background:var(--p2)}.num:nth-child(4){background:var(--p4)}
+.num b{font:800 clamp(30px,3.6vw,46px) 'Unbounded';letter-spacing:-.05em;line-height:1}.num span{font-size:14px}
+.tools{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}@media(max-width:700px){.tools{grid-template-columns:1fr}}
+.tb,.nt{position:relative;padding:28px;border-radius:26px;background:#fff;border:1px solid var(--line);overflow:hidden}
+.tb:before,.nt:before{content:"";position:absolute;inset:0;background:radial-gradient(260px circle at var(--gx,50%) var(--gy,0),var(--bgc),transparent 70%);opacity:0;transition:opacity .3s}.tb:hover:before,.nt:hover:before{opacity:1}
+.tb>*,.nt>*{position:relative}.tb h3{font-size:20px;margin-bottom:14px}.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{background:var(--bg);border:1px solid var(--line);padding:6px 14px;border-radius:99px;font-size:14px;font-weight:500;transition:transform .2s,background .2s,color .2s}.chips span:hover{transform:translateY(-4px) rotate(-2deg);background:var(--v);color:#fff;border-color:var(--v)}
+
+/* work: pinned horizontal scroll */
+.hs{padding:0;position:relative;z-index:1}
+.pin{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:center;gap:26px;overflow:hidden;padding-top:70px}
+.wh h2{margin-bottom:8px}.wh .sub{margin:0}
+.track{display:flex;gap:26px;padding:10px 24px;width:max-content;will-change:transform}
+.pc{width:min(480px,82vw);flex:none;background:#fff;border:1px solid var(--line);border-radius:30px;padding:20px 20px 26px;box-shadow:0 30px 50px -36px var(--ac,#6C47FF)}
+.pc .cv{border:0;padding:0;background:none;cursor:pointer;display:block;width:100%;border-radius:20px;overflow:hidden;margin-bottom:16px;transition:transform .25s ease-out}
+.scene{display:block;width:100%;height:auto}
+.pc small{color:var(--ac);font-weight:700;font-size:13px}.pc h3{font-size:21px;margin:6px 0 10px;letter-spacing:-.03em;line-height:1.15}.pc p{color:var(--mute);margin:0 0 14px;font-size:15px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pc.end{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:14px;background:var(--lime);border-color:var(--lime);box-shadow:none}.pc.end h3{font-size:34px}.pc.end p{-webkit-line-clamp:unset}.pc.end .btn:hover{background:var(--ink);border-color:var(--ink)}
+.tg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}.tg i{font-style:normal;font-size:12px;font-weight:700;padding:4px 11px;border-radius:99px;background:var(--bg);border:1px solid var(--line)}
+.hbar{position:absolute;left:24px;right:24px;bottom:26px;height:4px;border-radius:9px;background:var(--line)}.hbar i{display:block;height:100%;border-radius:9px;background:var(--v);transform-origin:0 50%;transform:scaleX(var(--hp,0))}
+@media(max-width:900px){.pin{position:static;height:auto;padding:90px 0 30px}.track{width:auto;transform:none!important;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 24px;padding:10px 24px 26px;scrollbar-width:none}.track::-webkit-scrollbar{display:none}.pc{width:82vw;max-width:420px;scroll-snap-align:center}.hbar{position:relative;left:auto;right:auto;bottom:auto;margin:0 24px}}
+.dash path{stroke-dashoffset:0;animation:dsh 2s linear infinite}@keyframes dsh{to{stroke-dashoffset:-22}}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pl 2.2s ease-in-out infinite}@keyframes pl{50%{transform:scale(1.18)}}
+.fl1{animation:fy 3.4s ease-in-out infinite}@keyframes fy{50%{transform:translateY(-6px)}}
+.wave{animation:wv 5s ease-in-out infinite alternate}.wave.w2{animation-duration:7s;animation-direction:alternate-reverse}@keyframes wv{to{transform:translateX(-30px)}}
+.tick{stroke-dasharray:24;animation:tk 3s ease-in-out infinite}@keyframes tk{0%{stroke-dashoffset:24}30%,100%{stroke-dashoffset:0}}
+.cursor.big{}svg .cursor{animation:fy 2.4s ease-in-out infinite}
+
+/* sketch */
+.sk{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}@media(max-width:900px){.sk{grid-template-columns:1fr 1fr}}@media(max-width:560px){.sk{grid-template-columns:1fr}}
+.nt h3{font-size:19px;margin-bottom:8px}.nt p{margin:0 0 12px;font-size:15px}.nt small{color:var(--mute);font:400 12px/1.5 'Fira Code';display:block}
+
+/* experience */
+.path{position:relative;max-width:880px;margin-top:44px;padding-left:36px}
+.path:before,.path:after{content:"";position:absolute;left:6px;top:8px;bottom:8px;width:3px;border-radius:3px;background:var(--line)}.path:after{background:linear-gradient(var(--v),var(--pink));transform-origin:0 0;transform:scaleY(var(--tp,0));transition:transform .15s linear}
+.step{position:relative;display:grid;grid-template-columns:180px 1fr;gap:24px;padding-bottom:46px}.step:before{content:"";position:absolute;left:-36px;top:6px;width:15px;height:15px;border-radius:50%;background:#fff;border:3px solid var(--v)}
+@media(max-width:620px){.step{grid-template-columns:1fr;gap:4px}}
+.step time{font:500 13px 'Fira Code';color:var(--v);padding-top:4px}.step h3{font-size:22px;margin-bottom:6px;letter-spacing:-.03em}.step p{margin:0 0 10px;color:var(--mute)}.step ul{margin:0;padding-left:20px;color:var(--mute)}.step li{margin-bottom:4px}
+
+/* contact */
+.cta{display:grid;grid-template-columns:1fr 1fr;gap:44px;background:var(--ink);color:#fff;border-radius:40px;padding:clamp(28px,6vw,68px);align-items:start;position:relative;overflow:hidden}
+.cta:before{content:"";position:absolute;width:380px;height:380px;right:-120px;top:-140px;border-radius:50%;background:var(--v);filter:blur(70px);opacity:.7;animation:drift 20s ease-in-out infinite alternate}
+.cta>*{position:relative}@media(max-width:900px){.cta{grid-template-columns:1fr}}
+.cta h2{font-size:clamp(28px,3.8vw,46px)}.cta p{color:#C9C5E6;margin:0 0 24px}
+.links{display:flex;flex-direction:column}.links a{text-decoration:none;font-weight:700;padding:11px 0;border-bottom:1px solid #ffffff2a;transition:padding .2s,color .2s;overflow-wrap:anywhere}.links a:hover{padding-left:10px;color:var(--lime)}
+.fm{display:grid;gap:12px}.fm input,.fm textarea{width:100%;padding:15px 18px;border-radius:16px;border:1.5px solid #ffffff33;background:#ffffff12;color:#fff;font:inherit}
+.fm ::placeholder{color:#ffffffaa}.fm input:focus,.fm textarea:focus{outline:2px solid var(--lime);background:#ffffff1c}.fm textarea{min-height:130px;resize:vertical}.fm .btn{justify-self:start}.fm .btn:disabled{opacity:.6;cursor:wait}.fmsg{font-size:14px;min-height:20px;color:#C9C5E6}
+footer{padding:50px 0 46px;color:var(--mute);font-size:14px;position:relative;z-index:1}footer .w{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between}
+footer .ok:before,footer .off:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;background:#00A67E}footer .off:before{background:#F29A00}
+
+/* command palette + dialog + toast */
+.cmd{position:fixed;inset:0;z-index:250;background:#14112B88;backdrop-filter:blur(5px);display:grid;place-items:start center;padding-top:16vh;animation:fi .2s both}
+.cbx{width:min(520px,calc(100% - 28px));background:#fff;border-radius:22px;padding:10px;box-shadow:0 40px 80px -30px #000}.cbx input{width:100%;border:0;border-bottom:1px solid var(--line);padding:14px 14px 16px;font:500 16px 'Manrope';outline:0;color:var(--ink);margin-bottom:6px}
+.cbx button{display:block;width:100%;text-align:left;border:0;background:none;padding:12px 14px;border-radius:12px;font:500 15px 'Manrope';cursor:pointer;color:var(--ink)}.cbx button:hover,.cbx button:focus-visible{background:var(--p1)}.cbx p{padding:12px 14px;margin:0;color:var(--mute)}
+dialog{border:0;border-radius:30px;padding:0;max-width:700px;width:calc(100% - 28px);background:#fff;color:var(--ink);max-height:88vh;overflow:auto}
+dialog::backdrop{background:#14112BAA;backdrop-filter:blur(5px)}dialog[open]{animation:fi .25s both,dp .35s}@keyframes dp{from{transform:scale(.94) translateY(16px)}}
+.dm .b{padding:26px 30px 32px}.dm small{color:var(--ac);font-weight:700}.dm h3{font-size:28px;margin:6px 0 10px;letter-spacing:-.03em}.dd{color:var(--mute)}.dm ul{color:var(--mute);padding-left:20px;margin:0 0 20px}.dm li{margin-bottom:6px}
+.x{position:absolute;right:14px;top:14px;width:42px;height:42px;border-radius:50%;border:0;background:#fff;color:var(--ink);font-size:22px;cursor:pointer;z-index:2;box-shadow:0 4px 14px #14112B33}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,90px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:99px;font-size:14px;transition:transform .3s;z-index:260}.toast.on{transform:translate(-50%,0)}
+
+/* loader: curtain lifts when ready */
+.loader{position:fixed;inset:0;z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:var(--ink);color:#fff;padding:24px;transition:clip-path .9s cubic-bezier(.7,0,.2,1),visibility .9s;clip-path:inset(0 0 0 0)}
+.loader.done{clip-path:inset(0 0 100% 0);visibility:hidden;pointer-events:none}
+.lg{font:800 clamp(38px,9vw,64px) 'Unbounded';letter-spacing:-.05em}.lg span,.logo span{color:var(--lime)}
+.bar{width:min(380px,82vw);height:8px;border-radius:99px;background:#ffffff22;overflow:hidden}.bar i{display:block;height:100%;border-radius:99px;background:var(--lime);transition:width .35s ease}
+.lt{width:min(380px,82vw);display:flex;justify-content:space-between;gap:12px;font:400 13px 'Fira Code';color:#C9C5E6}
+
+@media(max-width:600px){.w{padding:0 18px}section{padding:70px 0 10px}.row .btn{flex:1 1 auto;text-align:center}.cta{border-radius:28px}.dm .b{padding:20px}.l2{-webkit-text-stroke-width:1.5px}}
+@media(min-width:1500px){.w{max-width:1300px}body{font-size:18px}}
+@media(hover:none){.chips span:hover{transform:none}}
+
+/* ---- extra motion and mobile app feel ---- */
+.blobs b{position:absolute;left:var(--l);bottom:-40px;font:500 22px 'Fira Code';color:var(--v);opacity:0;animation:rise var(--t) linear infinite}
+@keyframes rise{0%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:.28}90%{opacity:.18}100%{transform:translateY(-112vh) rotate(40deg);opacity:0}}
+.sw{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.08em}.sw>span{display:inline-block;transform:translateY(112%) rotate(7deg);transform-origin:0 100%;transition:transform .9s cubic-bezier(.2,.8,.2,1)}
+.split.rv{opacity:1;transform:none}.split.on .sw>span{transform:none}
+.l2{transition:color .4s,-webkit-text-stroke-color .4s}.l2:hover{color:var(--v);-webkit-text-stroke-color:var(--v)}
+.mq .rev{animation-direction:reverse;animation-duration:60s;margin-top:10px}
+.pill a.on:not(.logo){background:var(--ink);color:#fff}
+.btn,.dock a,.up{position:relative;overflow:hidden}.pc .cv{position:relative}
+.rip{position:absolute;border-radius:50%;background:currentColor;opacity:.25;transform:scale(0);animation:rp .65s ease-out forwards;pointer-events:none}@keyframes rp{to{transform:scale(1);opacity:0}}
+.cf{position:fixed;width:9px;height:14px;border-radius:2px;z-index:500;pointer-events:none}
+.pc .cv:after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,#ffffffaa 50%,transparent 60%);transform:translateX(-120%);transition:transform .8s}.pc .cv:hover:after{transform:translateX(120%)}
+.pf{cursor:pointer}
+.hi{position:absolute;left:-34px;top:8px;background:var(--ink);color:#fff;font:700 15px 'Manrope','Noto Sans Sinhala','Noto Sans Tamil',sans-serif;padding:10px 16px;border-radius:18px 18px 18px 4px;z-index:3;animation:popb .55s cubic-bezier(.3,1.6,.5,1) both;box-shadow:0 14px 26px -14px #14112B}
+@keyframes popb{from{transform:scale(0) rotate(-14deg);transform-origin:0 100%}}
+.tapme,.swipe,.dock{display:none}
+.up{position:fixed;right:20px;bottom:22px;z-index:120;width:46px;height:46px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 12px 26px -12px #6C47FF99;opacity:min(1,calc(var(--sp) * 30))}
+.up svg{width:46px;height:46px;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.up .t{stroke:var(--line)}.up .g{stroke:var(--v);stroke-dasharray:119.4;stroke-dashoffset:calc(119.4 * (1 - var(--sp)));transform:rotate(-90deg);transform-origin:center}.up path{stroke:var(--ink)}
+@media(hover:none){
+  .tapme{display:block;position:absolute;left:50%;margin-left:-26px;bottom:-34px;font:500 12px 'Fira Code';color:var(--mute);animation:fy 1.8s ease-in-out infinite}
+  .swipe{display:inline-block;margin:12px 24px 0;font:700 13px 'Manrope';padding:7px 14px;border-radius:99px;background:var(--lime);animation:nudge 1.6s ease-in-out infinite}
+  @keyframes nudge{50%{transform:translateX(12px)}}
+}
+@media(max-width:700px){
+  body{padding-bottom:92px}
+  .burger{display:none!important}.mm{display:none}
+  .pill{padding:6px}.pill .logo{padding:8px 16px}
+  .dock{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:120;gap:4px;padding:6px;border-radius:26px;background:#ffffffe6;backdrop-filter:blur(16px);border:1px solid var(--line);box-shadow:0 20px 40px -18px #6C47FFaa}
+  .dock a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;padding:9px 0 7px;border-radius:20px;text-decoration:none;color:var(--mute);transition:background .3s,color .3s,transform .3s}
+  .dock a.on{background:var(--ink);color:#fff;transform:translateY(-6px);box-shadow:0 14px 22px -12px #14112B}
+  .dock svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .up{bottom:100px;right:14px;width:42px;height:42px}.up svg{width:42px;height:42px}
+  .toast{bottom:104px}
+  .hi{left:-6px;top:-4px}
+  .hl .row .btn{flex:1 1 100%}
+  .pw,.num,.tb{border-radius:22px}
+  .blobs b{font-size:18px}
+}
+@supports (animation-timeline:view()){@media(max-width:900px){.pc{animation:cardin linear both;animation-timeline:view(inline);animation-range:entry 0% cover 35%}@keyframes cardin{from{transform:scale(.88);opacity:.45}}}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.rv,.wipe,.hl>*,.hr,.code pre span{opacity:1!important;transform:none!important;clip-path:none!important}.hs{height:auto!important}.pin{position:static;height:auto;padding:90px 0 30px}.track{flex-direction:column;width:auto;transform:none!important}.pc{width:100%}}
       `}</style>
-    </div>
+    </>
   );
 }
-
