@@ -41,7 +41,8 @@ const TOOLS: [string, string, string[]][] = [
 ];
 
 const STEPS: [string, string, string, string[]][] = [
-  ["May 2026 to now", "Associate Software Engineer", "ASB Fashion (Pvt) Ltd, IT Department", ["Turning business workflows into software, from requirements to deployment.", "Building the Purchasing Order Management System, the official website and ASB Loyal Vault, the loyalty platform.", "API integrations, database optimisation, troubleshooting and maintenance."]],
+  ["Now", "Independent Software Engineer", "Freelance, based in Colombo, Sri Lanka", ["Working directly with clients on backend systems, REST APIs and messaging platforms.", "Building full-stack web apps and native Android apps from first idea to deployment."]],
+  ["From May 2026", "Associate Software Engineer", "ASB Fashion (Pvt) Ltd, IT Department", ["Turning business workflows into software, from requirements to deployment.", "Building the Purchasing Order Management System, the official website and ASB Loyal Vault, the loyalty platform.", "API integrations, database optimisation, troubleshooting and maintenance."]],
   ["Nov 2025 to May 2026", "Software Engineering Intern", "ASB Fashion (Pvt) Ltd, IT Department", ["Microsoft SQL Server administration and server management.", "Built the Broadcast Management System and the Token Management System, and contributed to the Returns Management System."]],
   ["2023 to 2026", "BSc (Hons) Software Engineering", "University of Bedfordshire, UK, with a Higher Diploma in IT at SLIIT City University, Colombo 03", []],
   ["Earlier", "G.C.E. A/L Physical Science and O/L", "Mahanama College, Colombo 03", []],
@@ -385,7 +386,7 @@ export default function Portfolio() {
         <Net />
         <div className="w hg">
           <div className="hl">
-            <span className="avail"><i />Open to backend and full-stack roles</span>
+            <span className="avail"><i />Independent engineer: open for projects</span>
             <h1><span className="l1"><Scramble t="Kavindu" /></span><span className="l2">Bogahawatte</span></h1>
             <p className="role">Software engineer who ships <u>dependable</u> systems.</p>
             <p className="intro">I build the quiet systems behind everyday things: the message that lands on a customer&apos;s phone, the order that gets approved, the app that just works.</p>
@@ -413,10 +414,10 @@ export default function Portfolio() {
               <div className="cb"><i /><i /><i /><span>kavindu.ts</span></div>
               <pre>
                 <span style={{ "--d": "1.6s" } as React.CSSProperties}><s>const</s> kavindu = {"{"}</span>
-                <span style={{ "--d": "1.9s" } as React.CSSProperties}>  role: <q>&quot;Associate Software Engineer&quot;</q>,</span>
-                <span style={{ "--d": "2.2s" } as React.CSSProperties}>  at: <q>&quot;ASB Fashion&quot;</q>,</span>
+                <span style={{ "--d": "1.9s" } as React.CSSProperties}>  role: <q>&quot;Independent Software Engineer&quot;</q>,</span>
+                <span style={{ "--d": "2.2s" } as React.CSSProperties}>  mode: <q>&quot;freelance&quot;</q>,</span>
                 <span style={{ "--d": "2.5s" } as React.CSSProperties}>  shipped: <q>&quot;200,000+ customer platform&quot;</q>,</span>
-                <span style={{ "--d": "2.8s" } as React.CSSProperties}>  openTo: <q>&quot;backend, full-stack&quot;</q>,</span>
+                <span style={{ "--d": "2.8s" } as React.CSSProperties}>  openTo: <q>&quot;projects, contracts&quot;</q>,</span>
                 <span style={{ "--d": "3.1s" } as React.CSSProperties}>{"}"};</span>
               </pre>
             </div>
@@ -504,7 +505,7 @@ export default function Portfolio() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className="av" src={AVATAR} alt="" onError={(e) => { e.currentTarget.style.display = "none"; }} />
               <h2>Let&apos;s build something dependable.</h2>
-              <p>I&apos;m looking for backend and full-stack roles, plus contract work on APIs, messaging and Android apps. References are available on request.</p>
+              <p>I&apos;m working independently and taking on freelance projects and long-term contracts: APIs, messaging, full-stack web and Android apps. Full-time roles too, for the right team. References are available on request.</p>
               <div className="links">
                 <a href={`mailto:${MAIL}`}>{MAIL}</a>
                 <a href="https://wa.me/94740890730" target="_blank" rel="noopener noreferrer">WhatsApp +94 74 089 0730</a>
