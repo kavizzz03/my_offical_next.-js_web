@@ -1,9 +1,9 @@
-export default function robots() {
+import type { MetadataRoute } from "next";
+
+export default function robots(): MetadataRoute.Robots {
   return {
-    rules: {
-      userAgent: "*",
-      allow: "/",
-    },
-    sitemap: "https://my-offical-next-js-web-jwe4.vercel.app/sitemap.xml",
+    rules: [{ userAgent: "*", allow: "/" }],
+    sitemap: "https://www.kavindubogahawatte.dev/sitemap.xml",
+    host: "https://www.kavindubogahawatte.dev",
   };
 }
