@@ -1,140 +1,163 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css"; 
+import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const geistMono = Geist_Mono({ variable: "--font-geist-mono-tech", subsets: ["latin"] });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono-tech",
-  subsets: ["latin"],
-});
+/* ---------- one place to change your details ---------- */
+const SITE_URL = "https://www.kavindubogahawatte.dev";
+const NAME = "Kavindu Bogahawatte";
+const ROLE = "Independent Software Engineer";
+const DESCRIPTION =
+  "Independent software engineer in Colombo, Sri Lanka. Reliable REST APIs, backend systems, full-stack web apps and native Android apps. Available for projects.";
+const LINKEDIN = "https://linkedin.com/in/kavindu-bogahawatte-7b3810320";
+const GITHUB = "https://github.com/kavizzz03";
 
-// --- ELITE SEO & GLOBAL BRANDING ---
+/* ---------- SEO and social metadata ---------- */
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.kavindubogahawatte.dev/"),
-  
+  metadataBase: new URL(SITE_URL),
+
   title: {
-    default: "Kavindu Bogahawatte | Backend Engineer & System Architect",
-    template: "%s | Kavindu Bogahawatte"
+    default: `${NAME} | ${ROLE} in Colombo`,
+    template: `%s | ${NAME}`,
   },
-  description: "Official Portfolio of Kavindu Bogahawatte. Backend Engineer & Mobile Specialist based in Colombo. Expert in Distributed Systems, Node.js, Kotlin, Microservices, and High-Throughput APIs.",
-  
+  description: DESCRIPTION,
+  applicationName: NAME,
+  category: "technology",
+
   keywords: [
-    "Kavindu Bogahawatte", 
-    "Kavindu Malshan", 
+    NAME,
+    "Kavindu Malshan",
     "Kavindu Nethvitha",
-    "Backend Systems Architect Sri Lanka",
-    "Scalable API Developer Colombo",
-    "Kotlin Android Specialist",
-    "Node.js Microservices Architecture",
-    "WhatsApp Business API Gateway Specialist",
-    "Mahanama College Software Engineer",
-    "SLIIT Computer Science Alumnus"
+    "software engineer Colombo",
+    "freelance software engineer Sri Lanka",
+    "backend developer Sri Lanka",
+    "REST API developer",
+    "Node.js developer",
+    "PHP developer",
+    "Android developer Kotlin",
+    "Jetpack Compose",
+    "WhatsApp Business API integration",
+    "SMS gateway integration",
+    "full-stack developer Next.js",
   ],
 
-  alternates: {
-    canonical: "/",
+  authors: [{ name: NAME, url: LINKEDIN }],
+  creator: NAME,
+  publisher: NAME,
+  alternates: { canonical: "/" },
+  formatDetection: { email: false, address: false, telephone: false },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
   },
 
-  authors: [{ name: "Kavindu Bogahawatte", url: "https://linkedin.com/in/kavindu-bogahawatte-7b3810320" }],
-  creator: "Kavindu Bogahawatte",
-  publisher: "Kavindu Bogahawatte",
-  
-  verification: {
-    google: "FzKegiPkrjdWbLh3CY29yRzZX6NbKco1vU7qXEpVDfs",
-  },
+  verification: { google: "FzKegiPkrjdWbLh3CY29yRzZX6NbKco1vU7qXEpVDfs" },
 
   openGraph: {
     type: "website",
     locale: "en_LK",
-    url: "https://www.kavindubogahawatte.dev/",
-    title: "Kavindu Bogahawatte | Backend Architect & Mobile Specialist",
-    description: "Architecting high-throughput backend systems, robust API integrations, and resilient mobile applications built for scale.",
-    siteName: "Kavindu Bogahawatte Engine",
-    images: [{
-      url: "/og-image.png",
-      width: 1200,
-      height: 630,
-      alt: "Kavindu Bogahawatte - Backend Systems & API Architecture"
-    }],
+    url: SITE_URL,
+    siteName: NAME,
+    title: `${NAME} | ${ROLE}`,
+    description: "I build reliable backends, REST APIs, full-stack web apps and native Android apps. Based in Colombo, available for projects.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: `${NAME}, ${ROLE}: backend, APIs and Android` }],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "Kavindu Bogahawatte | Backend Engineer & System Architect",
-    description: "Specializing in server-side architecture, high-performance APIs, and robust mobile engines.",
+    title: `${NAME} | ${ROLE}`,
+    description: "Reliable backends, REST APIs, full-stack web and native Android apps. Available for projects.",
     images: ["/og-image.png"],
   },
 
   icons: {
     icon: [
-      { url: "https://cdn-icons-png.flaticon.com/512/906/906343.png", sizes: "32x32", type: "image/png" },
-      { url: "https://cdn-icons-png.flaticon.com/512/2165/2165061.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
     ],
-    apple: [
-      { url: "https://cdn-icons-png.flaticon.com/512/906/906343.png", sizes: "180x180", type: "image/png" },
-    ],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FAFAFA",
+  width: "device-width",
+  initialScale: 1,
+  colorScheme: "light dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FAFAFD" },
+    { media: "(prefers-color-scheme: dark)", color: "#080918" },
+  ],
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "name": "Kavindu Bogahawatte",
-    "alternateName": ["Kavindu Malshan", "Kavindu Nethvitha"],
-    "url": "https://www.kavindubogahawatte.dev/",
-    "jobTitle": "Backend Engineer & System Architect",
-    "knowsAbout": [
-      "Backend Architecture",
-      "API Development",
-      "Node.js",
-      "Kotlin",
-      "MySQL",
-      "Distributed Systems",
-      "System Automation"
-    ],
-    "sameAs": [
-      "https://linkedin.com/in/kavindu-bogahawatte-7b3810320",
-      "https://github.com/kavindubogahawatte"
-    ],
-    "alumniOf": [
-      { "@type": "EducationalOrganization", "name": "SLIIT" },
-      { "@type": "EducationalOrganization", "name": "Mahanama College" }
-    ],
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Colombo",
-      "addressCountry": "LK"
-    }
-  };
+/* ---------- structured data (rich results) ---------- */
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": `${SITE_URL}/#person`,
+      name: NAME,
+      alternateName: ["Kavindu Malshan", "Kavindu Nethvitha"],
+      url: SITE_URL,
+      image: `${SITE_URL}/og-image.png`,
+      jobTitle: ROLE,
+      description: DESCRIPTION,
+      address: { "@type": "PostalAddress", addressLocality: "Colombo", addressCountry: "LK" },
+      sameAs: [LINKEDIN, GITHUB],
+      knowsAbout: ["Backend development", "REST APIs", "Node.js", "PHP", "Kotlin", "Jetpack Compose", "MySQL", "Microsoft SQL Server", "WhatsApp Business API", "Android development", "Next.js"],
+      alumniOf: [
+        { "@type": "CollegeOrUniversity", name: "University of Bedfordshire" },
+        { "@type": "CollegeOrUniversity", name: "SLIIT City University" },
+        { "@type": "EducationalOrganization", name: "Mahanama College" },
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: NAME,
+      inLanguage: "en",
+      publisher: { "@id": `${SITE_URL}/#person` },
+    },
+    {
+      "@type": "ProfessionalService",
+      "@id": `${SITE_URL}/#service`,
+      name: `${NAME}, software development`,
+      url: SITE_URL,
+      image: `${SITE_URL}/og-image.png`,
+      provider: { "@id": `${SITE_URL}/#person` },
+      areaServed: "Sri Lanka and remote clients",
+      address: { "@type": "PostalAddress", addressLocality: "Colombo", addressCountry: "LK" },
+      hasOfferCatalog: {
+        "@type": "OfferCatalog",
+        name: "Software development services",
+        itemListElement: ["Backend and REST API development", "Messaging platform integration (SMS, WhatsApp, email)", "Full-stack web development", "Native Android app development"].map((s) => ({
+          "@type": "Offer",
+          itemOffered: { "@type": "Service", name: s },
+        })),
+      },
+    },
+  ],
+};
 
+// runs before first paint so the saved light/dark choice never flashes
+const themeScript = `try{var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}`;
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}
-    >
+    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}>
       <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       </head>
-      <body className="min-h-full flex flex-col bg-[#FAFAFA] text-slate-900 selection:bg-slate-900 selection:text-white font-sans">
-        <main className="flex-grow">
-          {children}
-        </main>
+      {/* no bg/text/font classes here on purpose: the page controls light and dark itself */}
+      <body className="min-h-full flex flex-col selection:bg-indigo-600 selection:text-white">
+        <main className="flex-grow">{children}</main>
       </body>
     </html>
   );

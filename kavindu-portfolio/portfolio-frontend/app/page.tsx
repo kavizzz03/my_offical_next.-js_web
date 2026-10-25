@@ -60,6 +60,8 @@ const DOCK: [string, string, string][] = [
   ["path", "Path", "M12 3a9 9 0 100 18 9 9 0 000-18zM12 7v5l3 2"],
   ["hello", "Contact", "M3 6h18v12H3zM3 7l9 7 9-7"],
 ];
+const LOG = ["neural core online", "loading projects", "syncing satellites", "year 2040: ready"];
+const SKY: [number, number][] = [[0, 90], [60, 150], [110, 110], [170, 190], [230, 130], [290, 230], [350, 120], [410, 170], [470, 100], [520, 210], [580, 140], [640, 260], [700, 120], [760, 180], [820, 110], [880, 240], [940, 150], [1000, 120], [1060, 200], [1120, 130], [1180, 170], [1240, 100], [1300, 220], [1360, 140]];
 const ACC: Record<string, string> = { bc: "#6C47FF", po: "#00A67E", web: "#FF5C8A", fl: "#1AA7EC", ph: "#F29A00", ap: "#8A5CF6" };
 
 /* ---------------------------------------------------------------- */
@@ -144,6 +146,82 @@ function Count({ n, plus }: { n: number; plus?: boolean }) {
   }, [n]);
   const text = n >= 1_000_000 ? `${(v / 1_000_000).toFixed(v >= n ? 0 : 1)}M` : v.toLocaleString();
   return <b ref={ref as React.RefObject<HTMLElement>}>{text}{plus ? "+" : ""}</b>;
+}
+
+/* friendly robot assistant */
+function Robot({ w = 120, awake = true, wave = true }: { w?: number; awake?: boolean; wave?: boolean }) {
+  return (
+    <svg viewBox="0 0 140 170" width={w} className={`robot${awake ? " awake" : ""}`} aria-hidden="true">
+      <defs><linearGradient id="rbb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FFFFFF" /><stop offset="1" stopColor="#D5DEFA" /></linearGradient></defs>
+      <ellipse cx="70" cy="162" rx="38" ry="6" fill="#6C47FF" opacity=".16" />
+      <g className="rb-bob">
+        <line x1="70" y1="16" x2="70" y2="30" stroke="#9AA7D8" strokeWidth="4" strokeLinecap="round" />
+        <circle className="rb-ant" cx="70" cy="11" r="7" fill="#00B8D9" />
+        <path d="M34 112Q34 92 54 92H86Q106 92 106 112V140Q106 150 96 150H44Q34 150 34 140Z" fill="url(#rbb)" stroke="#B8C4F0" strokeWidth="2" />
+        <rect x="56" y="108" width="28" height="18" rx="6" fill="#0B1230" /><circle className="blk" cx="70" cy="117" r="5" fill="#B8F040" />
+        <rect x="20" y="100" width="14" height="38" rx="7" fill="#D5DEFA" stroke="#B8C4F0" strokeWidth="2" />
+        <g className={wave ? "rb-arm" : ""}><rect x="106" y="100" width="14" height="38" rx="7" fill="#D5DEFA" stroke="#B8C4F0" strokeWidth="2" /><circle cx="113" cy="138" r="8" fill="#fff" stroke="#B8C4F0" strokeWidth="2" /></g>
+        <rect x="28" y="28" width="84" height="62" rx="24" fill="url(#rbb)" stroke="#B8C4F0" strokeWidth="2" />
+        <rect x="38" y="40" width="64" height="38" rx="16" fill="#0B1230" />
+        <rect className="rb-eye" x="50" y="52" width="14" height="14" rx="7" fill="#35E0FF" /><rect className="rb-eye" x="76" y="52" width="14" height="14" rx="7" fill="#35E0FF" />
+        <path className="rb-mouth" d="M60 71Q70 77 80 71" stroke="#35E0FF" strokeWidth="3" fill="none" strokeLinecap="round" />
+        <rect x="20" y="52" width="8" height="20" rx="4" fill="#9AA7D8" /><rect x="112" y="52" width="8" height="20" rx="4" fill="#9AA7D8" />
+      </g>
+    </svg>
+  );
+}
+
+function Drone({ w = 70 }: { w?: number }) {
+  return (
+    <svg viewBox="0 0 100 50" width={w} className="drone" aria-hidden="true">
+      {[14, 86].map((x) => <g key={x}><line x1={x} y1="14" x2={x < 50 ? 38 : 62} y2="26" stroke="#9AA7D8" strokeWidth="3" /><ellipse className="rotor" cx={x} cy="12" rx="14" ry="2.6" fill="#6C47FF" opacity=".55" /></g>)}
+      <ellipse cx="50" cy="28" rx="22" ry="9" fill="#fff" stroke="#9AA7D8" strokeWidth="2" /><rect x="38" y="23" width="24" height="8" rx="4" fill="#0B1230" />
+      <circle className="blk" cx="50" cy="27" r="2.4" fill="#35E0FF" /><path className="blk" d="M42 38L50 47L58 38Z" fill="#35E0FF" opacity=".5" />
+    </svg>
+  );
+}
+
+/* the 2040 city behind the hero */
+function Skyline() {
+  return (
+    <svg className="sky" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#8B7BFF" stopOpacity=".6" /><stop offset="1" stopColor="#35E0FF" stopOpacity=".14" /></linearGradient>
+        <pattern id="win" width="12" height="14" patternUnits="userSpaceOnUse"><rect x="3" y="4" width="4" height="5" rx="1" fill="#fff" /></pattern>
+      </defs>
+      <g opacity=".5">{SKY.map(([x, h], i) => <rect key={i} x={x + 22} y={300 - h * 0.8} width="46" height={h * 0.8} fill="url(#sg)" />)}</g>
+      {SKY.map(([x, h], i) => <g key={i}><rect x={x} y={300 - h} width="52" height={h} rx="3" fill="url(#sg)" /><rect className={`tw t${i % 3}`} x={x} y={300 - h} width="52" height={h} fill="url(#win)" /></g>)}
+      <line x1="666" y1="40" x2="666" y2="6" stroke="#6C47FF" strokeWidth="3" /><circle className="blk" cx="666" cy="6" r="4.5" fill="#FF7AB6" />
+    </svg>
+  );
+}
+
+/* animated desk: scrolling code, live chart, hologram */
+function Workstation() {
+  const L: [number, string][] = [[40, "#35E0FF"], [70, "#B8F040"], [55, "#FF7AB6"], [85, "#8B7BFF"], [45, "#35E0FF"], [65, "#B8F040"], [30, "#FF7AB6"]];
+  return (
+    <svg viewBox="0 0 600 320" className="ws" role="img" aria-label="Animated futuristic workstation with scrolling code, a live chart and a hologram">
+      <defs>
+        <linearGradient id="deskg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#fff" /><stop offset="1" stopColor="#DCE4F7" /></linearGradient>
+        <radialGradient id="holo" cx=".5" cy=".4"><stop offset="0" stopColor="#35E0FF" stopOpacity=".95" /><stop offset="1" stopColor="#6C47FF" stopOpacity=".2" /></radialGradient>
+      </defs>
+      <ellipse cx="300" cy="304" rx="270" ry="12" fill="#6C47FF" opacity=".12" />
+      <rect x="150" y="30" width="230" height="150" rx="16" fill="#0B1230" /><rect x="150" y="30" width="230" height="22" rx="14" fill="#18214A" />
+      {[0, 1, 2].map((i) => <circle key={i} cx={166 + i * 14} cy="41" r="3.5" fill={["#FF7AB6", "#B8F040", "#35E0FF"][i]} />)}
+      {L.map(([w, c], i) => <rect key={i} className="cl" x={170 + (i % 3) * 12} y={66 + i * 15} width={w * 2.2} height="8" rx="4" fill={c} style={{ animationDelay: `${i * 0.35}s` }} />)}
+      <rect className="caret" x="244" y="154" width="7" height="12" fill="#35E0FF" />
+      <path d="M250 180H280L286 214H244Z" fill="#B8C4F0" />
+      <rect x="30" y="86" width="100" height="78" rx="12" fill="#0B1230" />
+      {[0, 1, 2, 3, 4].map((i) => <rect key={i} className="sb" x={44 + i * 17} y="116" width="11" height="40" rx="3" fill={["#35E0FF", "#8B7BFF", "#B8F040", "#FF7AB6", "#35E0FF"][i]} style={{ animationDelay: `${i * 0.25}s` }} />)}
+      <path d="M72 164H88L92 214H68Z" fill="#B8C4F0" />
+      <rect x="20" y="226" width="560" height="22" rx="11" fill="url(#deskg)" stroke="#C5D0F2" /><rect className="blk" x="20" y="246" width="560" height="4" rx="2" fill="#35E0FF" opacity=".6" />
+      <rect x="50" y="250" width="14" height="46" fill="#C5D0F2" /><rect x="536" y="250" width="14" height="46" fill="#C5D0F2" />
+      <rect x="190" y="210" width="150" height="14" rx="5" fill="#fff" stroke="#C5D0F2" />
+      {Array.from({ length: 12 }).map((_, i) => <rect key={i} className="blk" x={196 + i * 11.5} y="213" width="8" height="3.5" rx="1.5" fill="#35E0FF" style={{ animationDelay: `${((i * 5) % 12) * 0.12}s` }} />)}
+      <g><ellipse cx="440" cy="222" rx="38" ry="9" fill="#35E0FF" opacity=".35" /><path d="M410 222H470L454 112H426Z" fill="url(#holo)" opacity=".4" /><circle cx="440" cy="100" r="30" fill="url(#holo)" opacity=".85" />
+        <ellipse className="or1" cx="440" cy="100" rx="44" ry="12" fill="none" stroke="#35E0FF" strokeWidth="2" /><ellipse className="or2" cx="440" cy="100" rx="44" ry="12" fill="none" stroke="#8B7BFF" strokeWidth="2" /></g>
+    </svg>
+  );
 }
 
 /* animated illustration for each project */
@@ -287,7 +365,7 @@ export default function Portfolio() {
     addEventListener("scroll", onScroll, { passive: true }); addEventListener("resize", both);
     const id = setTimeout(both, 300);
     return () => { clearTimeout(id); removeEventListener("scroll", onScroll); removeEventListener("resize", both); };
-  }, [projects]);
+  }, [projects, loading]);
 
   // custom cursor
   useEffect(() => {
@@ -351,16 +429,21 @@ export default function Portfolio() {
 
   return (
     <>
+      {/* boot screen: while it shows, nothing else on the page is visible */}
+      <div className={`loader${loading ? "" : " done"}`} role="status" aria-live="polite" aria-hidden={!loading}>
+        <div className="lgrid" aria-hidden="true" />
+        <div className="ringw" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Loading">
+          <svg viewBox="0 0 160 160" className="rr" aria-hidden="true"><circle className="rt" cx="80" cy="80" r="70" /><circle className="rg" cx="80" cy="80" r="70" style={{ strokeDashoffset: 440 * (1 - progress / 100) }} /></svg>
+          <div className="rbt"><Robot w={92} awake={progress > 45} wave={false} /></div>
+        </div>
+        <div className="lg">KB<span>.</span>OS <em>2040</em></div>
+        <ul className="blog">{LOG.map((l, i) => progress >= i * 25 + 10 && <li key={l}>&gt; {l} {progress >= (i + 1) * 25 + 10 || progress === 100 ? "✓" : "..."}</li>)}</ul>
+        <div className="lt"><span>{status}</span><b>{progress}%</b></div>
+      </div>
+
+      <div className={`app${loading ? " hide" : ""}`}>
       <div className="sprog" aria-hidden="true" />
       <div className="cursor" ref={cur} aria-hidden="true"><i /></div>
-
-      <div className={`loader${loading ? "" : " done"}`} role="status" aria-live="polite" aria-hidden={!loading}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="lav" src={AVATAR} alt="" onError={(e) => { e.currentTarget.style.display = "none"; }} />
-        <div className="lg">kavindu<span>.dev</span></div>
-        <div className="bar" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${progress}%` }} /></div>
-        <div className="lt"><span>&gt; {status}</span><b>{progress}%</b></div>
-      </div>
 
       <div className="blobs" aria-hidden="true"><i /><i /><i />
         {SYM.map((x, i) => <b key={i} style={{ "--l": `${5 + i * 9.5}%`, "--t": `${15 + (i % 4) * 5}s`, animationDelay: `-${i * 2.4}s` } as React.CSSProperties}>{x}</b>)}
@@ -384,11 +467,14 @@ export default function Portfolio() {
       {/* HERO */}
       <header className={`hero${loading ? "" : " go"}`} id="top">
         <Net />
+        <Skyline />
+        <span className="fly d1" aria-hidden="true"><Drone w={74} /></span><span className="fly d2" aria-hidden="true"><Drone w={48} /></span>
+        <span className="car c1" aria-hidden="true" /><span className="car c2" aria-hidden="true" /><span className="car c3" aria-hidden="true" />
         <div className="w hg">
           <div className="hl">
-            <span className="avail"><i />Independent engineer: open for projects</span>
+            <span className="avail"><i />Independent engineer: open for projects<code>SYS.ONLINE</code></span>
             <h1><span className="l1"><Scramble t="Kavindu" /></span><span className="l2">Bogahawatte</span></h1>
-            <p className="role">Software engineer who ships <u>dependable</u> systems.</p>
+            <p className="role">Building the <u>dependable</u> systems of 2040, today.</p>
             <p className="intro">I build the quiet systems behind everyday things: the message that lands on a customer&apos;s phone, the order that gets approved, the app that just works.</p>
             <p className="typed">$ now_learning --about <b>{typed}</b></p>
             <div className="row">
@@ -407,20 +493,12 @@ export default function Portfolio() {
                 {!photoOk && <b>KB</b>}
               </div>
               <span className="tag">Colombo, Sri Lanka</span>
-              <span className="hi" key={gi} aria-hidden="true">{GREET[gi]}</span>
               <span className="tapme" aria-hidden="true">tap me</span>
             </div>
-            <div className="code" aria-hidden="true">
-              <div className="cb"><i /><i /><i /><span>kavindu.ts</span></div>
-              <pre>
-                <span style={{ "--d": "1.6s" } as React.CSSProperties}><s>const</s> kavindu = {"{"}</span>
-                <span style={{ "--d": "1.9s" } as React.CSSProperties}>  role: <q>&quot;Independent Software Engineer&quot;</q>,</span>
-                <span style={{ "--d": "2.2s" } as React.CSSProperties}>  mode: <q>&quot;freelance&quot;</q>,</span>
-                <span style={{ "--d": "2.5s" } as React.CSSProperties}>  shipped: <q>&quot;200,000+ customer platform&quot;</q>,</span>
-                <span style={{ "--d": "2.8s" } as React.CSSProperties}>  openTo: <q>&quot;projects, contracts&quot;</q>,</span>
-                <span style={{ "--d": "3.1s" } as React.CSSProperties}>{"}"};</span>
-              </pre>
-            </div>
+            <button className="bot" onClick={() => { setGi((g) => (g + 1) % GREET.length); burst(); }} aria-label="Say hello to my robot assistant">
+              <span className="hi" key={gi} aria-hidden="true">{GREET[gi]}</span>
+              <Robot w={150} />
+            </button>
           </div>
         </div>
       </header>
@@ -431,6 +509,8 @@ export default function Portfolio() {
       <div className="w">
         <section id="talent">
           <h2 className="rv split"><Split t="What I'm good at" /></h2>
+          <p className="sub">My 2040 workstation: code compiling, data streaming, a robot on standby.</p>
+          <div className="lab rv"><Workstation /><div className="labbot" aria-hidden="true"><Robot w={110} /></div><span className="fly d3" aria-hidden="true"><Drone w={44} /></span></div>
           <div className="power">
             {[["Messaging at scale", "SMS, WhatsApp and email campaigns for 200,000+ customers, built to reach 1 million."], ["Business workflows", "Purchasing, approvals, goods receiving and quality checks turned into reliable software."], ["Android, AI and data", "Jetpack Compose games, Whisper AI tools and an XGBoost flood-prediction prototype."]].map(([t, d], i) => (
               <div className="pw rv" key={t} style={{ transitionDelay: `${i * 120}ms` }}><h3>{t}</h3><p>{d}</p></div>
@@ -547,6 +627,7 @@ export default function Portfolio() {
       </dialog>
 
       <div className={`toast${toast ? " on" : ""}`} role="status">{toast}</div>
+      </div>
 
       <style jsx global>{`
 @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;700&family=Fira+Code:wght@400;500&family=Noto+Sans+Sinhala:wght@700&family=Noto+Sans+Tamil:wght@700&display=swap');
@@ -745,6 +826,68 @@ dialog::backdrop{background:#14112BAA;backdrop-filter:blur(5px)}dialog[open]{ani
   .blobs b{font-size:18px}
 }
 @supports (animation-timeline:view()){@media(max-width:900px){.pc{animation:cardin linear both;animation-timeline:view(inline);animation-range:entry 0% cover 35%}@keyframes cardin{from{transform:scale(.88);opacity:.45}}}}
+
+/* ================= 2040 · light theme ================= */
+:root{--bg:#F3F7FF;--ink:#0B1230;--mute:#55608A;--line:#DCE4F7;--c:#00B8D9;--lime:#B8F040;--p1:#E0E7FF;--p2:#D2F7F2;--p3:#EEF9CF;--p4:#FFE0F0}
+body{background:linear-gradient(180deg,#F3F7FF,#EAF2FF 55%,#F6F3FF)}
+.app.hide{visibility:hidden}
+.blk{animation:blk 1.4s ease-in-out infinite}@keyframes blk{50%{opacity:.25}}
+
+/* boot screen */
+.loader{background:radial-gradient(120% 90% at 50% 0,#fff,#E3ECFF 70%);color:var(--ink);gap:16px;clip-path:inset(0 0 0 0);overflow:hidden}
+.loader.done{clip-path:inset(50% 0 50% 0);visibility:hidden}
+.lgrid{position:absolute;inset:0;background-image:linear-gradient(#6C47FF14 1px,transparent 1px),linear-gradient(90deg,#6C47FF14 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(circle at 50% 45%,#000,transparent 72%);mask-image:radial-gradient(circle at 50% 45%,#000,transparent 72%)}
+.ringw{position:relative;width:176px;height:176px;display:grid;place-items:center}
+.rr{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);fill:none;stroke-width:6}.rt{stroke:var(--line)}.rg{stroke:var(--v);stroke-linecap:round;stroke-dasharray:440;transition:stroke-dashoffset .35s ease;filter:drop-shadow(0 0 6px #6C47FF99)}
+.rbt{position:relative;z-index:1;margin-top:6px}
+.loader .lg{font:800 clamp(28px,7vw,42px) 'Unbounded';letter-spacing:-.04em;position:relative}.loader .lg span{color:var(--c)}.loader .lg em{font-style:normal;color:var(--v)}
+.blog{position:relative;list-style:none;margin:0;padding:0;font:400 13px/1.8 'Fira Code';color:var(--mute);min-height:96px;width:min(300px,80vw)}.blog li{animation:fi .4s both}
+.loader .lt{position:relative;color:var(--mute)}
+
+/* robots, drones, city */
+.robot{display:block;overflow:visible}.rb-bob{animation:bob 4s ease-in-out infinite}
+.rb-eye,.rb-mouth{transition:opacity .4s}.rb-eye{transform-box:fill-box;transform-origin:center;animation:eb 4.2s infinite}@keyframes eb{93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+.robot:not(.awake) .rb-eye,.robot:not(.awake) .rb-mouth{opacity:.12}
+.rb-ant{transform-box:fill-box;transform-origin:center;animation:pl 1.8s ease-in-out infinite}@keyframes pl{50%{transform:scale(1.35)}}
+.rb-arm{transform-origin:113px 104px;animation:wv2 2.6s ease-in-out infinite}@keyframes wv2{0%,55%,100%{transform:rotate(0)}15%{transform:rotate(-40deg)}30%{transform:rotate(-8deg)}42%{transform:rotate(-40deg)}}
+.fly{position:absolute;left:-120px;animation:cross var(--t,26s) linear infinite;animation-delay:var(--dl,0s);z-index:1;pointer-events:none}
+.d1{top:20%;--t:30s}.d2{top:36%;--t:21s;--dl:-9s}.d3{top:8%;--t:18s;--dl:-4s}
+@keyframes cross{to{transform:translateX(calc(100vw + 260px))}}
+.drone{display:block;animation:bob 2.4s ease-in-out infinite}.rotor{transform-box:fill-box;transform-origin:center;animation:rot .12s linear infinite alternate}@keyframes rot{to{transform:scaleX(.5)}}
+.sky{position:absolute;left:0;right:0;bottom:0;width:100%;height:40%;z-index:0;pointer-events:none;-webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.2) 0,rgba(0,0,0,.2) 36%,#000 70%);mask-image:linear-gradient(90deg,rgba(0,0,0,.2) 0,rgba(0,0,0,.2) 36%,#000 70%)}
+@media(max-width:940px){.sky{height:30%;opacity:.5;-webkit-mask-image:none;mask-image:none}.d2{display:none}}
+.tw{animation:tw 4s ease-in-out infinite alternate}.t1{animation-delay:-1.3s}.t2{animation-delay:-2.6s}@keyframes tw{from{opacity:.2}to{opacity:.95}}
+.car{position:absolute;left:-120px;height:3px;width:90px;border-radius:3px;background:linear-gradient(90deg,transparent,#35E0FF,#fff);filter:drop-shadow(0 0 6px #35E0FF);animation:cross var(--t) linear infinite;animation-delay:var(--dl,0s);z-index:1}
+.c1{bottom:16%;--t:9s}.c2{bottom:23%;--t:13s;--dl:-5s;opacity:.8}.c3{bottom:10%;--t:7s;--dl:-2s}
+.avail code{font:500 11px 'Fira Code';color:var(--c);margin-left:6px;padding-left:10px;border-left:1px solid var(--line)}
+.bot{position:absolute;left:-14px;bottom:-8px;z-index:4;background:none;border:0;padding:0;cursor:pointer;transition:transform .3s cubic-bezier(.3,1.6,.5,1)}.bot:hover{transform:scale(1.06) rotate(-3deg)}
+.bot .hi{left:84px;top:-30px;white-space:nowrap}
+.hr .pf{margin-right:-30px}
+
+/* lab */
+.lab{position:relative;margin:34px 0 22px;padding:18px;border-radius:32px;background:linear-gradient(160deg,#fff,#E8F0FF);border:1px solid var(--line);overflow:hidden;box-shadow:0 40px 80px -50px #6C47FF}
+.lab:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#6C47FF12 1px,transparent 1px),linear-gradient(90deg,#6C47FF12 1px,transparent 1px);background-size:34px 34px}
+.ws{position:relative;display:block;width:100%;height:auto;max-height:430px}
+.labbot{position:absolute;right:2%;bottom:20%;width:17%;min-width:70px}.labbot svg{width:100%;height:auto}
+.cl{transform-box:fill-box;transform-origin:0 50%;animation:type 4s steps(14) infinite}@keyframes type{0%{transform:scaleX(0)}55%,100%{transform:scaleX(1)}}
+.caret{animation:blk .8s steps(1) infinite}
+.sb{transform-box:fill-box;transform-origin:50% 100%;animation:grow 2.4s ease-in-out infinite alternate}@keyframes grow{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
+.or1,.or2{transform-box:fill-box;transform-origin:center;animation:spin 6s linear infinite}.or2{animation-duration:9s;animation-direction:reverse}
+
+/* HUD corners on project cards, reticle cursor, light ticker */
+.pc{position:relative}.pc:before,.pc:after{content:"";position:absolute;width:20px;height:20px;border:2px solid var(--v);opacity:.55;pointer-events:none;transition:all .3s}
+.pc:before{left:10px;top:10px;border-right:0;border-bottom:0;border-radius:8px 0 0 0}.pc:after{right:10px;bottom:10px;border-left:0;border-top:0;border-radius:0 0 8px 0}.pc:hover:before,.pc:hover:after{width:30px;height:30px;opacity:1}
+.cursor i{position:relative;border-color:var(--c)}.cursor i:before,.cursor i:after{content:"";position:absolute;background:var(--c);left:50%;top:50%}.cursor i:before{width:2px;height:10px;margin:-5px 0 0 -1px}.cursor i:after{width:10px;height:2px;margin:-1px 0 0 -5px}
+.mq{background:#fff;color:var(--ink);border-block:1px solid var(--line);transform:none;margin:0}.mq span{background:var(--bg);color:var(--ink);border-color:var(--line)}.mq span:nth-child(3n){background:var(--v);color:#fff;border-color:var(--v)}
+.pill .logo{background:var(--ink)}
+
+/* contact in light */
+.cta{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:0 40px 90px -56px #6C47FF}.cta p{color:var(--mute)}.links a{border-bottom-color:var(--line)}.links a:hover{color:var(--v)}
+.fm input,.fm textarea{background:var(--bg);color:var(--ink);border-color:var(--line)}.fm ::placeholder{color:#8A93B8}.fm input:focus,.fm textarea:focus{outline:2px solid var(--v);background:#fff}.fmsg{color:var(--mute)}
+.btn.lime{background:var(--ink);border-color:var(--ink);color:#fff}.btn.lime:hover{background:var(--v);border-color:var(--v);color:#fff}
+.av{border-color:var(--v);box-shadow:0 14px 30px -14px var(--v)}
+@media(max-width:700px){.bot{left:-6px}.bot svg{width:112px;height:auto}.bot .hi{left:62px;top:-26px}.hr .pf{margin-right:0}.labbot{bottom:22%}}
+@media(prefers-reduced-motion:reduce){.fly,.car,.cl,.sb,.rb-arm,.rb-bob{animation:none!important}.fly,.car{display:none}.cl,.sb{transform:none!important}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.rv,.wipe,.hl>*,.hr,.code pre span{opacity:1!important;transform:none!important;clip-path:none!important}.hs{height:auto!important}.pin{position:static;height:auto;padding:90px 0 30px}.track{flex-direction:column;width:auto;transform:none!important}.pc{width:100%}}
       `}</style>
     </>
