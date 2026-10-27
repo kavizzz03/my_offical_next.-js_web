@@ -6,6 +6,8 @@ import React, { useEffect, useRef, useState } from "react";
 /* ---------------------------------------------------------------- */
 
 const MAIL = "kavindumalshan2003@gmail.com";
+// Contact form posts to your PHP script on cPanel (it emails kavindumalshan2003@gmail.com).
+// Override with NEXT_PUBLIC_CONTACT_URL in .env.local if you move the script.
 const API = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
 // Your photos live in /public: profile.svg (hero illustration) and avatar.svg (round face illustration). Real photos are also in public as profile.jpg and avatar.jpg.
 const PHOTO = "/profile.svg";
@@ -62,6 +64,68 @@ const DOCK: [string, string, string][] = [
 ];
 const LOG = ["neural core online", "loading projects", "syncing satellites", "year 2040: ready"];
 const SKY: [number, number][] = [[0, 90], [60, 150], [110, 110], [170, 190], [230, 130], [290, 230], [350, 120], [410, 170], [470, 100], [520, 210], [580, 140], [640, 260], [700, 120], [760, 180], [820, 110], [880, 240], [940, 150], [1000, 120], [1060, 200], [1120, 130], [1180, 170], [1240, 100], [1300, 220], [1360, 140]];
+const CONTACT = process.env.NEXT_PUBLIC_CONTACT_URL || "https://admin.asbfashion.com/Contact/contact.php";
+type Tech = { n: string; s: string; c: string; t?: string; slug: string; d: string };
+const TECH: Tech[] = [
+  { n: "PHP", s: "php", c: "#777BB4", slug: "php", d: "REST APIs and the 200,000-customer broadcast system" },
+  { n: "Node.js", s: "Nd", c: "#3C873A", slug: "nodedotjs", d: "Express backends and API services" },
+  { n: "React", s: "Re", c: "#0EA5C6", slug: "react", d: "Interfaces, sites and web apps" },
+  { n: "Kotlin", s: "Kt", c: "#7F52FF", slug: "kotlin", d: "Native Android apps with Jetpack Compose" },
+  { n: "MySQL", s: "SQL", c: "#E48E00", slug: "mysql", d: "The main database behind most of my systems" },
+  { n: "Python", s: "Py", c: "#3776AB", slug: "python", d: "XGBoost models, automation and Whisper AI tools" },
+  { n: "JavaScript", s: "JS", c: "#F0C419", t: "#0B1230", slug: "javascript", d: "Front ends, scripts and plain-JS apps" },
+  { n: "Java", s: "Jv", c: "#E76F00", slug: "openjdk", d: "Android apps and desktop software" },
+  { n: "Next.js", s: "Nx", c: "#111827", slug: "nextdotjs", d: "Full-stack sites, including this one" },
+  { n: "Tailwind CSS", s: "Tw", c: "#06B6D4", slug: "tailwindcss", d: "Fast, consistent styling" },
+  { n: "SQL Server", s: "MS", c: "#CC2927", slug: "microsoftsqlserver", d: "Database administration and server management" },
+  { n: "MongoDB", s: "Mg", c: "#13AA52", slug: "mongodb", d: "Flexible document data for web apps" },
+  { n: "Firebase", s: "Fb", c: "#F5820D", slug: "firebase", d: "Auth and data for mobile apps" },
+  { n: "Android", s: "An", c: "#3DDC84", t: "#0B1230", slug: "android", d: "Android SDK apps and games" },
+];
+const GUIDE: Record<string, string> = {
+  top: "Welcome to 2040! I'm KB-9, Kavindu's guide. Scroll down and I'll show you around.",
+  talent: "This is Kavindu's lab: code, data and a hologram, all running. He built a platform for 200,000+ customers.",
+  reactor: "These are the tools he builds with. Tap any tile to see what it's used for.",
+  services: "Need something built? Pick a service and I'll fill in the contact form for you.",
+  work: "Six real projects. Scroll or swipe and you'll fly through them.",
+  sketch: "Smaller side projects. Kavindu builds the ideas he can't leave alone.",
+  process: "Every project follows these five steps, from first idea to a system that keeps running.",
+  terminal: "Try it! Type 'help' and ask my terminal anything.",
+  path: "Kavindu's journey: student, intern, engineer, and now independent.",
+  hello: "Ready to build something? Your message goes straight to Kavindu's inbox.",
+};
+const LABEL: Record<string, string> = { top: "Home", talent: "Skills and services", work: "Projects", path: "Experience", hello: "Contact" };
+const RAIL: [string, string][] = [["top", "Home"], ["talent", "Skills"], ["services", "Services"], ["work", "Projects"], ["process", "Process"], ["terminal", "Terminal"], ["path", "Experience"], ["hello", "Contact"]];
+const MENU: [string, string, string, string][] = [
+  ["top", "Home", "Back to the start", "M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"],
+  ["talent", "Skills", "Lab, tech reactor, services", "M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"],
+  ["work", "Projects", "Fly through six real builds", "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"],
+  ["process", "How I work", "From idea to shipped", "M5 5h6v6H5zM13 13h6v6h-6zM8 11v4h5M16 13V8h-5"],
+  ["terminal", "Terminal", "Ask me anything", "M4 17l6-6-6-6M12 19h8"],
+  ["path", "Experience", "Where I've been", "M12 3a9 9 0 100 18 9 9 0 000-18zM12 7v5l3 2"],
+  ["hello", "Contact", "Start a project", "M3 6h18v12H3zM3 7l9 7 9-7"],
+];
+const CAT_ICON = [
+  "M8 7L3 12l5 5M16 7l5 5-5 5M14 4l-4 16",
+  "M3 5h18v14H3zM3 9h18M7 7h.01M10 7h.01",
+  "M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01",
+  "M12 3c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3zM4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6",
+  "M8 2h8a2 2 0 012 2v16a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2zM11 18h2",
+  "M9 3v2M15 3v2M9 19v2M15 19v2M3 9h2M3 15h2M19 9h2M19 15h2M7 5h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2zM10 10h4v4h-4z",
+];
+const SERVICES = [
+  { t: "Backend and REST APIs", c: "#6C47FF", ic: "M8 7L3 12l5 5M16 7l5 5-5 5M14 4l-4 16", b: ["Clean, well-structured endpoints", "Authentication, validation and webhooks", "PHP or Node.js with MySQL or MongoDB"] },
+  { t: "Messaging platforms", c: "#00B8D9", ic: "M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z", b: ["SMS, WhatsApp and email campaigns", "Segmentation and scheduling", "Delivery tracking and reports"] },
+  { t: "Full-stack web apps", c: "#FF5C8A", ic: "M3 5h18v14H3zM3 9h18M7 7h.01M10 7h.01", b: ["Next.js and React front ends", "Admin dashboards and databases", "Responsive, fast and SEO-ready"] },
+  { t: "Android apps", c: "#3DB86B", ic: "M8 2h8a2 2 0 012 2v16a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2zM11 18h2", b: ["Native Kotlin with Jetpack Compose", "API and Firebase integration", "From first idea to a finished app"] },
+];
+const PROCESS: [string, string, string][] = [
+  ["Understand", "Goals, users and constraints, in plain language.", "M11 4a7 7 0 100 14 7 7 0 000-14zM21 21l-5-5"],
+  ["Design", "Architecture, API contract and database schema.", "M5 5h6v6H5zM13 13h6v6h-6zM8 11v4h5M16 13V8h-5"],
+  ["Build", "Backend, integrations and the interface.", "M8 7L3 12l5 5M16 7l5 5-5 5M14 4l-4 16"],
+  ["Test", "Postman, integration and error-path testing.", "M9 3h6M10 3v6L4 20a1 1 0 001 1h14a1 1 0 001-1l-6-11V3"],
+  ["Ship", "Deploy, monitor and keep improving.", "M12 2c3 3 4 7 3 11l-3 3-3-3c-1-4 0-8 3-11zM9 16l-3 3 3 1M15 16l3 3-3 1"],
+];
 const ACC: Record<string, string> = { bc: "#6C47FF", po: "#00A67E", web: "#FF5C8A", fl: "#1AA7EC", ph: "#F29A00", ap: "#8A5CF6" };
 
 /* ---------------------------------------------------------------- */
@@ -224,6 +288,45 @@ function Workstation() {
   );
 }
 
+/* one tool in the reactor, shown with its real logo */
+function Tile({ t, i, onHover }: { t: Tech; i: number; onHover: (t: Tech | null) => void }) {
+  const [bad, setBad] = useState(false);
+  return (
+    <button className="tile" style={{ "--tc": t.c, "--i": i, color: t.t || "#fff" } as React.CSSProperties}
+      onPointerEnter={() => onHover(t)} onFocus={() => onHover(t)} onClick={() => onHover(t)}
+      onPointerLeave={(e) => { if (e.pointerType === "mouse") onHover(null); }} onBlur={() => onHover(null)} aria-label={t.n}>
+      {bad ? t.s : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={`https://cdn.simpleicons.org/${t.slug}/${t.t ? "0B1230" : "ffffff"}`} alt="" width={30} height={30} loading="lazy" onError={() => setBad(true)} />
+      )}
+    </button>
+  );
+}
+
+/* tech reactor: two rings of tools orbiting a glowing core, linked by data beams */
+function Reactor({ hov, setHov }: { hov: Tech | null; setHov: (t: Tech | null) => void }) {
+  const place = (n: number, i: number, R: number) => { const a = (i / n) * Math.PI * 2 - Math.PI / 2; return [50 + R * Math.cos(a), 50 + R * Math.sin(a)]; };
+  const ring = (items: Tech[], R: number, cls: string, off: number, beams: boolean) => (
+    <div className={`rngs ${cls}`}>
+      {beams && <svg className="beams" viewBox="0 0 100 100" aria-hidden="true">{items.map((t, i) => { const [x, y] = place(items.length, i, R); return <line key={t.n} x1="50" y1="50" x2={x} y2={y} />; })}</svg>}
+      {items.map((t, i) => { const [x, y] = place(items.length, i, R); return <span key={t.n} className="pos" style={{ left: `${x}%`, top: `${y}%` }}><Tile t={t} i={i + off} onHover={setHov} /></span>; })}
+    </div>
+  );
+  return (
+    <div className="rwrap">
+      <div className="rx">
+        <i className="sweep" aria-hidden="true" /><i className="pulse1" /><i className="pulse2" />
+        {ring(TECH.slice(0, 6), 26, "rn1", 0, true)}
+        {ring(TECH.slice(6), 44, "rn2", 6, false)}
+        <div className="core"><b>{hov ? hov.n : "KB"}</b><small>{hov ? "in my toolbox" : "tech reactor"}</small></div>
+      </div>
+      <div className="rinfo" aria-live="polite">
+        {hov ? <><span className="rdot" style={{ background: hov.c }} /><b>{hov.n}</b><span>{hov.d}</span></> : <span>Hover or tap a tile to see what I use it for.</span>}
+      </div>
+    </div>
+  );
+}
+
 /* animated illustration for each project */
 function Scene({ k }: { k: string }) {
   const c = ACC[k] || ACC.bc;
@@ -259,6 +362,18 @@ export default function Portfolio() {
   const [photoOk, setPhotoOk] = useState(true);
   const [gi, setGi] = useState(0);
   const [sec, setSec] = useState("top");
+  const [hov, setHov] = useState<Tech | null>(null);
+  const [rsec, setRsec] = useState("top");
+  const [guideOn, setGuideOn] = useState(true);
+  const [say, setSay] = useState("");
+  const [typedSay, setTypedSay] = useState("");
+  const [tlines, setTlines] = useState<string[]>(["KB-OS 2040 · online", "Type 'help' to see what I can do."]);
+  const [tin, setTin] = useState("");
+  const termRef = useRef<HTMLDivElement | null>(null);
+  const guideRef = useRef(true);
+  const seen = useRef<Set<string>>(new Set());
+  guideRef.current = guideOn;
+  const speak = (k: string) => { if (guideRef.current && GUIDE[k]) setSay(GUIDE[k]); };
   const dlg = useRef<HTMLDialogElement | null>(null);
   const cur = useRef<HTMLDivElement | null>(null);
   const hs = useRef<HTMLDivElement | null>(null);
@@ -284,7 +399,7 @@ export default function Portfolio() {
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState("connecting to server");
   const [online, setOnline] = useState<boolean | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", message: "", website: "" });
   const [sending, setSending] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   // loader + backend fetch
@@ -320,9 +435,9 @@ export default function Portfolio() {
   const send = async (e: React.FormEvent) => {
     e.preventDefault(); setSending("sending");
     try {
-      const res = await fetch(`${API}/api/contact`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      const res = await fetch(CONTACT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
       if (!res.ok) throw new Error(String(res.status));
-      setSending("sent"); setForm({ name: "", email: "", message: "" }); burst(); showToast("Message sent");
+      setSending("sent"); setForm({ name: "", email: "", message: "", website: "" }); burst(); showToast("Message sent");
     } catch { setSending("error"); }
   };
 
@@ -350,6 +465,8 @@ export default function Portfolio() {
       root.style.setProperty("--sp", String(h > 0 ? scrollY / h : 0));
       const tl = document.querySelector<HTMLElement>(".path");
       if (tl) { const r = tl.getBoundingClientRect(); tl.style.setProperty("--tp", String(Math.min(1, Math.max(0, (innerHeight * 0.65 - r.top) / r.height)))); }
+      const pr = document.querySelector<HTMLElement>(".proc");
+      if (pr) { const r = pr.getBoundingClientRect(); const v = Math.min(1, Math.max(0, (innerHeight * 0.8 - r.top) / (r.height + innerHeight * 0.15))); pr.style.setProperty("--pp", String(v)); pr.querySelectorAll(".pstep").forEach((el, i) => el.classList.toggle("act", v > (i + 0.35) / 5)); }
       const s = hs.current, t = track.current;
       if (s && t) {
         if (innerWidth > 900) {
@@ -387,8 +504,8 @@ export default function Portfolio() {
   // rotating greeting, active section tracking, tap ripples
   useEffect(() => { const id = setInterval(() => setGi((g) => (g + 1) % GREET.length), 2600); return () => clearInterval(id); }, []);
   useEffect(() => {
-    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) setSec(e.target.id === "sketch" ? "work" : e.target.id); }), { rootMargin: "-45% 0px -50% 0px" });
-    ["top", "talent", "work", "sketch", "path", "hello"].forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { setRsec(e.target.id); setSec(({ sketch: "work", process: "work", services: "talent", terminal: "path" } as Record<string, string>)[e.target.id] || e.target.id); } }), { rootMargin: "-45% 0px -50% 0px" });
+    ["top", "talent", "services", "work", "sketch", "process", "terminal", "path", "hello"].forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
     return () => io.disconnect();
   }, [projects]);
   useEffect(() => {
@@ -400,6 +517,30 @@ export default function Portfolio() {
     };
     addEventListener("pointerdown", dn, { passive: true }); return () => removeEventListener("pointerdown", dn);
   }, []);
+
+  // robot guide: remembers your choice, welcomes you, then comments on each section the first time you reach it
+  useEffect(() => { try { if (localStorage.getItem("guide") === "off") setGuideOn(false); } catch { /* ignore */ } }, []);
+  useEffect(() => {
+    if (loading) return;
+    const t = setTimeout(() => { seen.current.add("top"); speak("top"); }, 900);
+    return () => clearTimeout(t);
+  }, [loading]); // eslint-disable-line
+  useEffect(() => {
+    if (loading) return;
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting && !seen.current.has(e.target.id)) { seen.current.add(e.target.id); speak(e.target.id); }
+    }), { rootMargin: "-30% 0px -50% 0px" });
+    ["talent", "reactor", "services", "work", "sketch", "process", "terminal", "path", "hello"].forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
+    return () => io.disconnect();
+  }, [loading, projects]); // eslint-disable-line
+  useEffect(() => {
+    if (!say) { setTypedSay(""); return; }
+    const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let i = 0; let id: ReturnType<typeof setInterval> | undefined;
+    if (calm) setTypedSay(say); else { id = setInterval(() => { i++; setTypedSay(say.slice(0, i)); if (i >= say.length && id) clearInterval(id); }, 22); }
+    const hide = setTimeout(() => setSay(""), 3200 + say.length * 55);
+    return () => { if (id) clearInterval(id); clearTimeout(hide); };
+  }, [say]);
 
   // dialog
   useEffect(() => { const d = dlg.current; if (!d) return; if (active !== null && !d.open) d.showModal(); if (active === null && d.open) d.close(); }, [active]);
@@ -425,6 +566,30 @@ export default function Portfolio() {
   const tilt = (e: React.PointerEvent<HTMLElement>) => { const el = e.currentTarget, r = el.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5; el.style.transform = `perspective(800px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) scale(1.02)`; };
   const glow = (e: React.PointerEvent<HTMLElement>) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--gx", `${e.clientX - r.left}px`); e.currentTarget.style.setProperty("--gy", `${e.clientY - r.top}px`); };
 
+  const toggleGuide = () => {
+    const v = !guideOn; setGuideOn(v);
+    try { localStorage.setItem("guide", v ? "on" : "off"); } catch { /* ignore */ }
+    if (v) setTimeout(() => speak(sec in GUIDE ? sec : "top"), 350); else { setSay(""); showToast("Robot guide turned off"); }
+  };
+  const run = (raw: string) => {
+    const c = raw.trim().toLowerCase(); if (!c) return;
+    const out: string[] = [];
+    switch (c) {
+      case "help": out.push("about · skills · services · projects · contact · hire · clear"); break;
+      case "about": case "whoami": out.push("Kavindu Bogahawatte, independent software engineer in Colombo.", "I build dependable backends, REST APIs, full-stack web and Android apps."); break;
+      case "skills": TOOLS.forEach((t) => out.push(`${t[0]}: ${t[2].join(", ")}`)); break;
+      case "services": SERVICES.forEach((x) => out.push(`- ${x.t}`)); break;
+      case "projects": projects.forEach((x) => out.push(`- ${x.n}`)); break;
+      case "contact": out.push(MAIL, "WhatsApp +94 74 089 0730", "github.com/kavizzz03"); break;
+      case "hire": out.push("Opening the contact form..."); setTimeout(() => go("hello"), 700); break;
+      case "clear": setTlines([]); setTin(""); return;
+      default: out.push(`command not found: ${c}. Type 'help'.`);
+    }
+    setTlines((l) => [...l, `$ ${raw.trim()}`, ...out]); setTin("");
+  };
+  useEffect(() => { const el = termRef.current; if (el) el.scrollTop = el.scrollHeight; }, [tlines]);
+  const startProject = (title: string) => { setForm((f) => ({ ...f, message: `Hi Kavindu, I'd like to talk about: ${title}.\n\n` })); go("hello"); };
+
   const p = active !== null ? projects[active] : null;
 
   return (
@@ -449,15 +614,51 @@ export default function Portfolio() {
         {SYM.map((x, i) => <b key={i} style={{ "--l": `${5 + i * 9.5}%`, "--t": `${15 + (i % 4) * 5}s`, animationDelay: `-${i * 2.4}s` } as React.CSSProperties}>{x}</b>)}
       </div>
 
+      {/* desktop: floating bar with a guide switch and a call to action */}
       <nav className="pill" aria-label="Main">
         <a className="logo" href="#top">kb<span>.</span></a>
-        {[["talent", "Talent"], ["work", "Work"], ["path", "Experience"], ["hello", "Contact"]].map(([id, l]) => <a key={id} href={`#${id}`} className={sec === id ? "on" : ""}>{l}</a>)}
+        {[["talent", "Talent"], ["services", "Services"], ["work", "Work"], ["path", "Experience"], ["hello", "Contact"]].map(([id, l]) => <a key={id} href={`#${id}`} className={sec === id ? "on" : ""}>{l}</a>)}
+        <button className={`gtog${guideOn ? " on" : ""}`} onClick={toggleGuide} aria-pressed={guideOn} aria-label={guideOn ? "Turn off the robot guide" : "Turn on the robot guide"} title={guideOn ? "Robot guide: on" : "Robot guide: off"}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M7 8h10a3 3 0 013 3v6a3 3 0 01-3 3H7a3 3 0 01-3-3v-6a3 3 0 013-3zM9 13h.01M15 13h.01M9 17h6" /></svg>
+        </button>
         <button className="kbd" onClick={() => setCmd(true)} aria-label="Open command menu">Ctrl K</button>
-        <button className="burger" aria-label="Menu" aria-expanded={menu} onClick={() => setMenu(!menu)}>{menu ? "✕" : "☰"}</button>
+        <a className="btn sm" href="#hello">Hire me</a>
       </nav>
-      {menu && <div className="mm">{["talent", "work", "path", "hello"].map((id) => <a key={id} href={`#${id}`} onClick={() => setMenu(false)}>{id === "path" ? "Experience" : id[0].toUpperCase() + id.slice(1)}</a>)}</div>}
 
-      <nav className="dock" aria-label="Quick navigation">
+      {/* desktop: dots on the right edge show where you are */}
+      <nav className="rail" aria-label="Section navigation">
+        {RAIL.map(([id, l]) => <a key={id} href={`#${id}`} className={rsec === id ? "on" : ""} aria-label={l}><span>{l}</span><i /></a>)}
+      </nav>
+
+      {/* phone: header with a live section label and an expanding full-screen menu */}
+      <div className="mhead">
+        <a className="logo" href="#top">kb<span>.</span></a>
+        <div className="mlab"><i /><span key={sec}>{LABEL[sec] || "Home"}</span></div>
+        <button className={`mbtn${menu ? " open" : ""}`} onClick={() => setMenu(!menu)} aria-label={menu ? "Close menu" : "Open menu"} aria-expanded={menu}><b /><b /><b /></button>
+      </div>
+      <div className={`msheet${menu ? " open" : ""}`} aria-hidden={!menu}>
+        <ul>
+          {MENU.map(([id, l, d, ic], i) => (
+            <li key={id} style={{ "--i": i } as React.CSSProperties}>
+              <a href={`#${id}`} onClick={() => setMenu(false)} tabIndex={menu ? 0 : -1}>
+                <span className="mi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d={ic} /></svg></span>
+                <span><b>{l}</b><small>{d}</small></span><em>→</em>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <div className="mq2">
+          <a href={`mailto:${MAIL}`} tabIndex={menu ? 0 : -1}>Email</a>
+          <a href="https://wa.me/94740890730" target="_blank" rel="noopener noreferrer" tabIndex={menu ? 0 : -1}>WhatsApp</a>
+          <a href="https://github.com/kavizzz03" target="_blank" rel="noopener noreferrer" tabIndex={menu ? 0 : -1}>GitHub</a>
+          <a href="https://linkedin.com/in/kavindu-bogahawatte-7b3810320" target="_blank" rel="noopener noreferrer" tabIndex={menu ? 0 : -1}>LinkedIn</a>
+        </div>
+        <button className="mg" onClick={toggleGuide} tabIndex={menu ? 0 : -1}>Robot guide: {guideOn ? "on (tap to turn off)" : "off (tap to turn on)"}</button>
+      </div>
+
+      {/* phone: bottom bar with a sliding highlight */}
+      <nav className="dock" aria-label="Quick navigation" style={{ "--i": Math.max(0, DOCK.findIndex((d) => d[0] === sec)) } as React.CSSProperties}>
+        <i className="ind" aria-hidden="true" />
         {DOCK.map(([id, l, d]) => (
           <a key={id} href={`#${id}`} className={sec === id ? "on" : ""}><svg viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg>{l}</a>
         ))}
@@ -501,6 +702,7 @@ export default function Portfolio() {
             </button>
           </div>
         </div>
+        <a className="cue" href="#talent" aria-label="Scroll to explore"><i /></a>
       </header>
 
       <div className="mq" aria-hidden="true"><div>{[0, 1].flatMap((r) => MARQUEE.map((w) => ({ w, r }))).map((o, i) => <span key={i}>{o.w}</span>)}</div><div className="rev">{[0, 1].flatMap((r) => MARQUEE.slice().reverse().map((w) => ({ w, r }))).map((o, i) => <span key={i}>{o.w}</span>)}</div></div>
@@ -522,11 +724,32 @@ export default function Portfolio() {
             <div className="num rv"><Count n={30} plus /><span>personal projects</span></div>
             <div className="num rv"><Count n={6} /><span>stacks I ship in, PHP to Kotlin</span></div>
           </div>
+          <h3 className="mini rv">Tech reactor</h3>
+          <p className="sub">Hover or tap a tile. These are the tools I build with.</p>
+          <div className="rv" id="reactor"><Reactor hov={hov} setHov={setHov} /></div>
           <div className="tools">
             {TOOLS.map((t, i) => (
-              <div className="tb rv" key={t[0]} onPointerMove={glow} style={{ "--bgc": `var(${t[1]})`, transitionDelay: `${(i % 2) * 100}ms` } as React.CSSProperties}>
+              <div className="tb rv" key={t[0]} onPointerMove={glow} style={{ "--bgc": `var(${t[1]})`, transitionDelay: `${(i % 3) * 90}ms` } as React.CSSProperties}>
+                <span className="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d={CAT_ICON[i] || CAT_ICON[0]} /></svg></span>
                 <h3>{t[0]}</h3>
                 <div className="chips">{t[2].map((c, j) => <span key={c} style={{ transitionDelay: `${j * 40}ms` }}>{c}</span>)}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <div className="w">
+        <section id="services">
+          <h2 className="rv split"><Split t="How I can help" /></h2>
+          <p className="sub">Pick a starting point. The button fills in the contact form for you.</p>
+          <div className="svc">
+            {SERVICES.map((x, i) => (
+              <div className="sv rv" key={x.t} style={{ "--sc": x.c, transitionDelay: `${i * 90}ms` } as React.CSSProperties}>
+                <span className="sico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d={x.ic} /></svg></span>
+                <h3>{x.t}</h3>
+                <ul>{x.b.map((l) => <li key={l}>{l}</li>)}</ul>
+                <button className="btn o" onClick={() => startProject(x.t)}>Start this project</button>
               </div>
             ))}
           </div>
@@ -567,6 +790,28 @@ export default function Portfolio() {
           </div>
         </section>
 
+        <section id="process">
+          <h2 className="rv split"><Split t="How I work" /></h2>
+          <p className="sub">From first idea to a system that keeps running.</p>
+          <div className="proc">
+            <i className="pl" aria-hidden="true" />
+            {PROCESS.map(([t, d, ic]) => (
+              <div className="pstep" key={t}><span className="pn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d={ic} /></svg></span><h3>{t}</h3><p>{d}</p></div>
+            ))}
+          </div>
+        </section>
+
+        <section id="terminal">
+          <h2 className="rv split"><Split t="Ask my terminal" /></h2>
+          <p className="sub">Type a command, or tap one below.</p>
+          <div className="term rv">
+            <div className="tb2"><i /><i /><i /><span>kavindu@kb-os:~</span></div>
+            <div className="tout" ref={termRef} aria-live="polite">{tlines.map((l, i) => <div key={i} className={l.startsWith("$") ? "c2" : ""}>{l}</div>)}</div>
+            <form className="tin" onSubmit={(e) => { e.preventDefault(); run(tin); }}><span>$</span><input value={tin} onChange={(e) => setTin(e.target.value)} aria-label="Terminal command" placeholder="try: help" autoComplete="off" autoCapitalize="off" spellCheck={false} /></form>
+          </div>
+          <div className="tq">{["help", "about", "skills", "services", "projects", "contact", "hire"].map((c) => <button key={c} onClick={() => run(c)}>{c}</button>)}</div>
+        </section>
+
         <section id="path">
           <h2 className="rv split"><Split t="Experience" /></h2>
           <div className="path">
@@ -594,6 +839,7 @@ export default function Portfolio() {
               </div>
             </div>
             <form className="fm" onSubmit={send}>
+              <input className="hp" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />
               <input required placeholder="Your name" aria-label="Your name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               <input required type="email" placeholder="Your email" aria-label="Your email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               <textarea required placeholder="What would you like to build?" aria-label="Message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
@@ -625,6 +871,18 @@ export default function Portfolio() {
           </div>
         )}
       </dialog>
+
+      {guideOn && (
+        <div className={`guide${say ? " talk" : ""}`}>
+          {say && (
+            <div className="gbub" role="status" aria-live="polite">
+              <p>{typedSay}<i className="gc" /></p>
+              <div className="gact"><button onClick={() => setSay("")}>Got it</button><button onClick={toggleGuide}>Turn off guide</button></div>
+            </div>
+          )}
+          <button className="gbot" onClick={() => (say ? setSay("") : speak(sec in GUIDE ? sec : "top"))} aria-label={say ? "Hide the robot's message" : "Ask the robot guide to talk"}><Robot w={70} /></button>
+        </div>
+      )}
 
       <div className={`toast${toast ? " on" : ""}`} role="status">{toast}</div>
       </div>
@@ -888,6 +1146,123 @@ body{background:linear-gradient(180deg,#F3F7FF,#EAF2FF 55%,#F6F3FF)}
 .av{border-color:var(--v);box-shadow:0 14px 30px -14px var(--v)}
 @media(max-width:700px){.bot{left:-6px}.bot svg{width:112px;height:auto}.bot .hi{left:62px;top:-26px}.hr .pf{margin-right:0}.labbot{bottom:22%}}
 @media(prefers-reduced-motion:reduce){.fly,.car,.cl,.sb,.rb-arm,.rb-bob{animation:none!important}.fly,.car{display:none}.cl,.sb{transform:none!important}}
+
+/* ================= talent: reactor, icons ================= */
+.mini{font-size:clamp(22px,3vw,30px);margin:46px 0 6px}
+.rx{position:relative;width:min(540px,94vw);aspect-ratio:1;margin:10px auto 40px}
+.rx .rngs{position:absolute;inset:0;border-radius:50%;animation:spin 46s linear infinite}
+.rx .rn2{animation-duration:70s;animation-direction:reverse}
+.rx .rngs:before{content:"";position:absolute;border-radius:50%;border:1.5px dashed #6C47FF44;inset:var(--ri,0)}
+.rn1{--ri:24%}.rn2{--ri:6%}
+.pos{position:absolute;width:0;height:0}
+.tile{position:absolute;left:-30px;top:-30px;width:60px;height:60px;border-radius:18px;border:2px solid #ffffffaa;background:var(--tc);color:#fff;font:800 16px 'Unbounded';display:grid;place-items:center;cursor:pointer;box-shadow:0 14px 26px -12px var(--tc);animation:spin 46s linear infinite reverse;transition:scale .25s cubic-bezier(.3,1.6,.5,1)}
+.rn2 .tile{animation:spin 70s linear infinite}.tile:hover,.tile:focus-visible{scale:1.25;z-index:3}
+.rx:hover .rngs,.rx:hover .tile{animation-play-state:paused}
+.core{position:absolute;left:50%;top:50%;width:26%;aspect-ratio:1;margin:-13% 0 0 -13%;border-radius:50%;background:linear-gradient(135deg,var(--v),var(--c));color:#fff;display:grid;place-content:center;text-align:center;box-shadow:0 0 50px #6C47FF77,inset 0 0 20px #ffffff55}
+.core b{font:800 clamp(15px,3.2vw,22px) 'Unbounded';letter-spacing:-.04em;line-height:1.1}.core small{font:500 11px 'Fira Code';opacity:.9}
+.pulse1,.pulse2{position:absolute;left:50%;top:50%;width:26%;aspect-ratio:1;margin:-13% 0 0 -13%;border-radius:50%;border:2px solid var(--v);animation:rp2 3s ease-out infinite}.pulse2{animation-delay:1.5s}
+@keyframes rp2{to{transform:scale(2.6);opacity:0}}
+.ci{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:var(--bgc,var(--p1));margin-bottom:14px;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}.tb:hover .ci{transform:rotate(-10deg) scale(1.12)}
+.ci svg,.sico svg,.pn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tools{grid-template-columns:repeat(3,1fr)}@media(max-width:980px){.tools{grid-template-columns:1fr 1fr}}@media(max-width:620px){.tools{grid-template-columns:1fr}}
+.tb h3{font-size:18px}
+
+/* services */
+.svc{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}@media(max-width:1060px){.svc{grid-template-columns:1fr 1fr}}@media(max-width:600px){.svc{grid-template-columns:1fr}}
+.sv{position:relative;padding:26px;border-radius:28px;background:#fff;border:1px solid var(--line);display:flex;flex-direction:column;gap:14px;overflow:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s,border-color .3s}
+.sv:before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:var(--sc)}.sv:after{content:"";position:absolute;width:180px;height:180px;right:-70px;top:-70px;border-radius:50%;background:var(--sc);opacity:.12;filter:blur(24px)}
+.sv:hover{transform:translateY(-8px);border-color:var(--sc);box-shadow:0 30px 50px -34px var(--sc)}
+.sico{width:58px;height:58px;border-radius:18px;background:var(--sc);color:#fff;display:grid;place-items:center;animation:bob 4s ease-in-out infinite;position:relative;z-index:1}.sv:nth-child(even) .sico{animation-delay:-2s}
+.sv h3{font-size:19px;line-height:1.2}.sv ul{list-style:none;margin:0;padding:0;color:var(--mute);font-size:15px;display:grid;gap:8px}
+.sv li{padding-left:24px;position:relative}.sv li:before{content:"";position:absolute;left:0;top:7px;width:12px;height:7px;border-left:2.5px solid var(--sc);border-bottom:2.5px solid var(--sc);transform:rotate(-45deg)}
+.sv .btn{margin-top:auto;align-self:flex-start;padding:12px 22px}
+
+/* how I work */
+.proc{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-top:46px}
+.proc .pl{position:absolute;left:10%;right:10%;top:31px;height:4px;border-radius:4px;background:var(--line)}
+.proc .pl:after{content:"";position:absolute;inset:0;border-radius:4px;background:linear-gradient(90deg,var(--v),var(--c));transform-origin:0 50%;transform:scaleX(var(--pp,0));transition:transform .15s linear}
+.pstep{position:relative;text-align:center;padding:0 6px}.pn{width:64px;height:64px;border-radius:50%;margin:0 auto 14px;background:#fff;border:3px solid var(--line);color:var(--mute);display:grid;place-items:center;position:relative;z-index:1;transition:all .5s cubic-bezier(.3,1.6,.5,1)}
+.pstep.act .pn{background:var(--v);border-color:var(--v);color:#fff;transform:scale(1.1);box-shadow:0 0 0 9px #6C47FF22}
+.pstep h3{font-size:18px;margin-bottom:6px}.pstep p{margin:0;font-size:14.5px;color:var(--mute)}
+@media(max-width:820px){.proc{grid-template-columns:1fr;gap:26px}.pstep{display:grid;grid-template-columns:64px 1fr;gap:0 18px;text-align:left;align-items:center}.pn{margin:0;grid-row:span 2}.pstep h3{align-self:end}.pstep p{align-self:start}
+ .proc .pl{left:31px;right:auto;top:32px;bottom:32px;width:4px;height:auto}.proc .pl:after{transform-origin:50% 0;transform:scaleY(var(--pp,0))}}
+
+/* terminal */
+.term{border-radius:22px;overflow:hidden;background:#0B1230;color:#CFE8FF;border:1px solid #1d2a63;box-shadow:0 40px 80px -50px #6C47FF;max-width:820px}
+.tb2{display:flex;align-items:center;gap:7px;padding:12px 16px;background:#141d4a}.tb2 i{width:11px;height:11px;border-radius:50%;background:#FF7AB6}.tb2 i:nth-child(2){background:#B8F040}.tb2 i:nth-child(3){background:#35E0FF}.tb2 span{margin-left:10px;font:400 12px 'Fira Code';color:#8FA0D8}
+.tout{height:250px;overflow-y:auto;padding:16px 18px;font:400 14px/1.7 'Fira Code',monospace;white-space:pre-wrap}.tout .c2{color:#B8F040;margin-top:6px}
+.tin{display:flex;align-items:center;gap:10px;padding:12px 18px;border-top:1px solid #1d2a63;font:500 14px 'Fira Code'}.tin span{color:#35E0FF}.tin input{flex:1;background:transparent;border:0;outline:0;color:#fff;font:inherit;min-width:0}
+.tq{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.tq button{font:600 13px 'Fira Code';padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;transition:all .2s}.tq button:hover{background:var(--v);color:#fff;border-color:var(--v);transform:translateY(-2px)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.rx .rngs,.tile,.sico{animation:none!important}}
+
+/* ============ reactor v2: real logos, beams, scanner ============ */
+.rwrap{width:min(560px,94vw);margin:10px auto 44px}
+.rx{width:100%;margin:0 auto 20px}
+.rx .tile{scale:0;overflow:hidden}
+.rv.on .rx .tile{scale:1;transition:scale .7s cubic-bezier(.3,1.6,.5,1);transition-delay:calc(var(--i) * 70ms)}
+.rv.on .rx .tile:hover,.rv.on .rx .tile:focus-visible{scale:1.3;transition-delay:0s;z-index:3}
+.tile img{width:30px;height:30px;display:block;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}.tile:hover img{transform:rotate(-10deg) scale(1.12)}
+.sweep{position:absolute;inset:4%;border-radius:50%;background:conic-gradient(from 0deg,#35E0FF44,transparent 24%);animation:spin 5s linear infinite;-webkit-mask:radial-gradient(circle,transparent 28%,#000 29%);mask:radial-gradient(circle,transparent 28%,#000 29%)}
+.beams{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.beams line{stroke:var(--v);stroke-width:.35;stroke-dasharray:1.4 1.6;opacity:.45;animation:dsh2 2.4s linear infinite}@keyframes dsh2{to{stroke-dashoffset:-6}}
+.rinfo{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;min-height:56px;padding:12px 20px;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:15px;color:var(--mute);text-align:center;box-shadow:0 18px 36px -26px #6C47FF;transition:all .3s}
+.rinfo b{color:var(--ink);font:700 14px 'Unbounded'}.rdot{width:12px;height:12px;border-radius:50%;box-shadow:0 0 12px currentColor}
+
+/* ============ robot guide ============ */
+.guide{position:fixed;left:18px;bottom:18px;z-index:95;display:flex;flex-direction:column;align-items:flex-start;gap:8px;pointer-events:none}.guide>*{pointer-events:auto}
+.gbub{position:relative;width:min(330px,calc(100vw - 36px));background:#fff;border:1px solid var(--line);border-radius:20px 20px 20px 6px;padding:14px 16px 12px;box-shadow:0 26px 50px -24px #6C47FF,0 0 0 4px #6C47FF14;animation:popb .5s cubic-bezier(.3,1.6,.5,1) both;transform-origin:0 100%}
+.gbub p{margin:0 0 10px;font-size:15px;line-height:1.5;color:var(--ink);min-height:3em}
+.gc{display:inline-block;width:2px;height:1em;background:var(--v);margin-left:2px;vertical-align:-2px;animation:bl 1s steps(1) infinite}
+.gact{display:flex;gap:8px;flex-wrap:wrap}.gact button{font:700 12px 'Manrope';padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;transition:all .2s}.gact button:hover{border-color:var(--v);color:var(--v)}
+.gbot{background:none;border:0;padding:0;cursor:pointer;filter:drop-shadow(0 14px 18px #6C47FF55);transition:transform .3s cubic-bezier(.3,1.6,.5,1)}.gbot:hover{transform:scale(1.08) rotate(-4deg)}
+.guide.talk .gbot{animation:bob 1.1s ease-in-out infinite}
+
+/* ============ desktop navigation ============ */
+.gtog{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--mute);display:grid;place-items:center;cursor:pointer;transition:all .25s}
+.gtog svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.gtog.on{background:var(--v);border-color:var(--v);color:#fff;box-shadow:0 8px 18px -8px var(--v)}.gtog:hover{transform:rotate(-8deg) scale(1.06)}
+.pill .btn.sm{padding:9px 18px;margin-left:2px}.pill .btn.sm:hover{color:#fff}
+.rail{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:90;display:none;flex-direction:column;gap:4px}
+@media(min-width:1260px){.rail{display:flex}}
+.rail a{display:flex;align-items:center;justify-content:flex-end;gap:10px;height:24px;text-decoration:none}
+.rail i{width:8px;height:8px;border-radius:50%;background:#9AA7D8;transition:all .35s cubic-bezier(.3,1.6,.5,1)}.rail a:hover i{background:var(--v);transform:scale(1.4)}.rail a.on i{height:26px;border-radius:8px;background:linear-gradient(var(--v),var(--c))}
+.rail span{opacity:0;transform:translateX(8px);transition:all .25s;font:700 12px 'Manrope';background:var(--ink);color:#fff;padding:4px 11px;border-radius:99px;white-space:nowrap;pointer-events:none}.rail a:hover span,.rail a:focus-visible span{opacity:1;transform:none}
+.cue{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:3;width:26px;height:42px;border:2px solid var(--v);border-radius:16px;opacity:.7;transition:opacity .3s}.cue:hover{opacity:1}
+.cue i{position:absolute;left:50%;top:8px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:var(--v);animation:cue 1.6s ease-in-out infinite}@keyframes cue{50%{transform:translateY(14px);opacity:.2}}
+
+/* ============ phone navigation ============ */
+.mhead,.msheet{display:none}
+@media(max-width:700px){
+  .pill,.cue{display:none}
+  .mhead{display:flex;position:fixed;top:10px;left:10px;right:10px;z-index:110;height:54px;align-items:center;gap:10px;padding:7px;border-radius:99px;background:#ffffffd9;backdrop-filter:blur(16px);border:1px solid var(--line);box-shadow:0 16px 36px -22px #6C47FF}
+  .mhead .logo{font:800 16px 'Unbounded';padding:9px 16px;border-radius:99px;background:var(--ink);color:#fff;text-decoration:none}.mhead .logo span{color:var(--lime)}
+  .mlab{flex:1;display:flex;align-items:center;gap:8px;justify-content:center;font:700 13px 'Manrope';color:var(--ink);min-width:0}
+  .mlab i{width:8px;height:8px;border-radius:50%;background:#00A67E;animation:ping 2s infinite;flex:none}
+  .mlab span{animation:lab .45s cubic-bezier(.2,.8,.2,1) both;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@keyframes lab{from{opacity:0;transform:translateY(10px)}}
+  .mbtn{position:relative;width:40px;height:40px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--v),var(--c));cursor:pointer;flex:none}
+  .mbtn b{position:absolute;left:11px;width:18px;height:2.5px;border-radius:2px;background:#fff;transition:transform .4s cubic-bezier(.3,1.4,.5,1),opacity .2s,top .4s}
+  .mbtn b:nth-child(1){top:14px}.mbtn b:nth-child(2){top:19px}.mbtn b:nth-child(3){top:24px}
+  .mbtn.open b:nth-child(1){top:19px;transform:rotate(45deg)}.mbtn.open b:nth-child(2){opacity:0}.mbtn.open b:nth-child(3){top:19px;transform:rotate(-45deg)}
+  .msheet{display:flex;flex-direction:column;position:fixed;inset:0;z-index:105;padding:92px 20px 28px;background:radial-gradient(120% 70% at 100% 0,#E6E0FF,#F3F7FF 60%);overflow-y:auto;clip-path:circle(0 at calc(100% - 38px) 37px);visibility:hidden;transition:clip-path .7s cubic-bezier(.7,0,.2,1),visibility 0s .7s}
+  .msheet.open{clip-path:circle(160% at calc(100% - 38px) 37px);visibility:visible;transition:clip-path .7s cubic-bezier(.7,0,.2,1)}
+  .msheet ul{list-style:none;margin:0;padding:0}
+  .msheet li{opacity:0;transform:translateY(26px);transition:opacity .4s,transform .4s}
+  .msheet.open li{opacity:1;transform:none;transition:opacity .5s calc(var(--i) * 60ms + 250ms),transform .5s calc(var(--i) * 60ms + 250ms)}
+  .msheet li a{display:flex;align-items:center;gap:14px;padding:11px 4px;text-decoration:none;border-bottom:1px solid var(--line)}
+  .mi{width:46px;height:46px;border-radius:16px;background:var(--p1);display:grid;place-items:center;color:var(--v);flex:none}.mi svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .msheet li b{display:block;font:700 19px 'Unbounded';letter-spacing:-.03em;line-height:1.2}.msheet li small{color:var(--mute);font-size:13px}.msheet li em{margin-left:auto;font-style:normal;color:var(--v);font-size:20px}
+  .mq2{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}.mq2 a{font:700 14px 'Manrope';padding:10px 18px;border-radius:99px;background:#fff;border:1px solid var(--line);text-decoration:none}
+  .mg{margin-top:16px;font:700 14px 'Manrope';padding:12px 18px;border-radius:16px;border:1px dashed var(--v);background:transparent;color:var(--v);cursor:pointer}
+  .dock{display:grid;grid-template-columns:repeat(5,1fr);gap:0}
+  .dock a{position:relative;z-index:1}.dock a.on{background:none;box-shadow:none;color:#fff;transform:translateY(-3px)}
+  .ind{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px) / 5);border-radius:20px;background:linear-gradient(135deg,var(--ink),#1d2a63);transform:translateX(calc(var(--i) * 100%));transition:transform .55s cubic-bezier(.3,1.4,.5,1);box-shadow:0 14px 22px -12px #0B1230;z-index:0}
+  .guide{left:10px;bottom:98px}.gbot svg{width:56px;height:auto}
+  .rinfo{border-radius:22px}
+}
+@media(prefers-reduced-motion:reduce){.rx .tile{scale:1!important}.sweep,.beams line,.cue i{animation:none!important}}
+
+/* hidden toast must never peek out above the phone dock */
+.toast{opacity:0;visibility:hidden;transition:transform .3s,opacity .3s,visibility .3s}.toast.on{opacity:1;visibility:visible}
+@media(max-width:700px){.msheet{padding-bottom:118px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.rv,.wipe,.hl>*,.hr,.code pre span{opacity:1!important;transform:none!important;clip-path:none!important}.hs{height:auto!important}.pin{position:static;height:auto;padding:90px 0 30px}.track{flex-direction:column;width:auto;transform:none!important}.pc{width:100%}}
       `}</style>
     </>
