@@ -456,11 +456,16 @@ export default function Portfolio() {
   // scroll progress, timeline, pinned horizontal gallery
   useEffect(() => {
     const root = document.documentElement;
+    let lastY = scrollY;
     const layout = () => {
       const s = hs.current, t = track.current; if (!s || !t) return;
       s.style.height = innerWidth > 900 ? `${t.scrollWidth - innerWidth + innerHeight + 80}px` : "auto";
     };
     const onScroll = () => {
+      const y = scrollY, dy = y - lastY;
+      if (Math.abs(dy) > 6) { root.dataset.head = dy > 0 && y > 120 ? "hide" : "show"; lastY = y; }
+      if (y < 80) root.dataset.head = "show";
+      root.dataset.scrolled = y > 30 ? "1" : "";
       const h = root.scrollHeight - innerHeight;
       root.style.setProperty("--sp", String(h > 0 ? scrollY / h : 0));
       const tl = document.querySelector<HTMLElement>(".path");
@@ -517,6 +522,9 @@ export default function Portfolio() {
     };
     addEventListener("pointerdown", dn, { passive: true }); return () => removeEventListener("pointerdown", dn);
   }, []);
+
+  // keep the header visible while the menu is open
+  useEffect(() => { const r = document.documentElement; if (menu) r.dataset.menu = "1"; else delete r.dataset.menu; }, [menu]);
 
   // robot guide: remembers your choice, welcomes you, then comments on each section the first time you reach it
   useEffect(() => { try { if (localStorage.getItem("guide") === "off") setGuideOn(false); } catch { /* ignore */ } }, []);
@@ -623,6 +631,7 @@ export default function Portfolio() {
         </button>
         <button className="kbd" onClick={() => setCmd(true)} aria-label="Open command menu">Ctrl K</button>
         <a className="btn sm" href="#hello">Hire me</a>
+        <i className="pprog" aria-hidden="true" />
       </nav>
 
       {/* desktop: dots on the right edge show where you are */}
@@ -632,9 +641,16 @@ export default function Portfolio() {
 
       {/* phone: header with a live section label and an expanding full-screen menu */}
       <div className="mhead">
-        <a className="logo" href="#top">kb<span>.</span></a>
-        <div className="mlab"><i /><span key={sec}>{LABEL[sec] || "Home"}</span></div>
+        <a className="mlogo" href="#top" aria-label="Kavindu, back to the top"><span>kb<em>.</em></span></a>
+        <div className="mlab" aria-live="polite">
+          <b className="mn">{String(Math.max(0, DOCK.findIndex((d) => d[0] === sec)) + 1).padStart(2, "0")}</b>
+          <span key={sec}>{LABEL[sec] || "Home"}</span>
+        </div>
+        <button className={`mg2${guideOn ? " on" : ""}`} onClick={toggleGuide} aria-pressed={guideOn} aria-label={guideOn ? "Turn off the robot guide" : "Turn on the robot guide"}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M7 8h10a3 3 0 013 3v6a3 3 0 01-3 3H7a3 3 0 01-3-3v-6a3 3 0 013-3zM9 13h.01M15 13h.01M9 17h6" /></svg>
+        </button>
         <button className={`mbtn${menu ? " open" : ""}`} onClick={() => setMenu(!menu)} aria-label={menu ? "Close menu" : "Open menu"} aria-expanded={menu}><b /><b /><b /></button>
+        <i className="mprog" aria-hidden="true" />
       </div>
       <div className={`msheet${menu ? " open" : ""}`} aria-hidden={!menu}>
         <ul>
@@ -1263,6 +1279,34 @@ body{background:linear-gradient(180deg,#F3F7FF,#EAF2FF 55%,#F6F3FF)}
 /* hidden toast must never peek out above the phone dock */
 .toast{opacity:0;visibility:hidden;transition:transform .3s,opacity .3s,visibility .3s}.toast.on{opacity:1;visibility:visible}
 @media(max-width:700px){.msheet{padding-bottom:118px}}
+
+/* ============ header v2: hides on scroll down, returns on scroll up ============ */
+.pill{transition:transform .55s cubic-bezier(.3,1.2,.4,1),box-shadow .3s;overflow:hidden}
+.pprog{position:absolute;left:14px;right:14px;bottom:0;height:2.5px;border-radius:3px;background:linear-gradient(90deg,var(--v),var(--c),var(--lime));transform-origin:0 50%;transform:scaleX(var(--sp));pointer-events:none}
+html[data-head="hide"]:not([data-menu]) .pill{transform:translate(-50%,calc(-100% - 28px));pointer-events:none}
+html[data-scrolled="1"] .pill{box-shadow:0 18px 40px -22px #6C47FF}
+@media(max-width:820px){
+  .pill,.cue{display:none}
+  .mhead{display:flex;position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:10px;right:10px;z-index:110;height:58px;align-items:center;gap:8px;padding:8px;border-radius:20px;background:#ffffffe0;backdrop-filter:blur(18px) saturate(1.5);border:1px solid var(--line);box-shadow:0 14px 30px -26px #6C47FF;overflow:hidden;transition:transform .55s cubic-bezier(.3,1.2,.4,1),box-shadow .3s}
+  html[data-scrolled="1"] .mhead{box-shadow:0 20px 40px -22px #6C47FF}
+  html[data-head="hide"]:not([data-menu]) .mhead{transform:translateY(calc(-100% - 24px));pointer-events:none}
+  .mlogo{position:relative;isolation:isolate;flex:none;width:42px;height:42px;border-radius:14px;background:var(--ink);display:grid;place-items:center;text-decoration:none}
+  .mlogo:before{content:"";position:absolute;inset:-2px;border-radius:16px;background:conic-gradient(from 0deg,#6C47FF,#35E0FF,#B8F040,#FF7AB6,#6C47FF);animation:spin 5s linear infinite;z-index:-1}
+  .mlogo span{font:800 15px 'Unbounded';color:#fff;letter-spacing:-.05em}.mlogo em{font-style:normal;color:var(--lime)}
+  .mlab{flex:1;min-width:0;display:flex;align-items:center;gap:9px;padding-left:4px}
+  .mlab .mn{flex:none;font:500 11px 'Fira Code';color:#fff;background:linear-gradient(135deg,var(--v),var(--c));padding:4px 7px;border-radius:8px}
+  .mlab span{font:700 14px 'Manrope';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;animation:lab .45s cubic-bezier(.2,.8,.2,1) both}
+  .mg2{position:relative;flex:none;width:42px;height:42px;border-radius:14px;border:1px solid var(--line);background:#fff;color:var(--mute);display:grid;place-items:center;cursor:pointer;transition:all .25s}
+  .mg2 svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .mg2.on{color:var(--v);border-color:var(--v);background:#F3F0FF}.mg2.on:after{content:"";position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:#00A67E;box-shadow:0 0 0 2px #fff}
+  .mbtn{flex:none;width:42px;height:42px;border-radius:14px}.mbtn b{left:12px}
+  .mbtn b:nth-child(1){top:15px}.mbtn b:nth-child(2){top:20px}.mbtn b:nth-child(3){top:25px}
+  .mbtn.open b:nth-child(1){top:20px}.mbtn.open b:nth-child(3){top:20px}
+  .mprog{position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--v),var(--c),var(--lime));transform-origin:0 50%;transform:scaleX(var(--sp))}
+  .msheet{padding-top:96px}
+}
+@media(max-width:360px){.mlab .mn{display:none}.mg2{display:none}}
+@media(prefers-reduced-motion:reduce){.pill,.mhead{transition:none!important}.mlogo:before{animation:none!important}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.rv,.wipe,.hl>*,.hr,.code pre span{opacity:1!important;transform:none!important;clip-path:none!important}.hs{height:auto!important}.pin{position:static;height:auto;padding:90px 0 30px}.track{flex-direction:column;width:auto;transform:none!important}.pc{width:100%}}
       `}</style>
     </>
