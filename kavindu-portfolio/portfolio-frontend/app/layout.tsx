@@ -87,6 +87,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover", // lets the page use the full screen on phones with notches
   colorScheme: "light dark",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#FAFAFD" },
@@ -153,6 +154,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* if JavaScript is off, skip the loading screen and show the page */}
+        <noscript><style>{".app.hide{visibility:visible!important}.loader{display:none!important}"}</style></noscript>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       </head>
       {/* no bg/text/font classes here on purpose: the page controls light and dark itself */}
