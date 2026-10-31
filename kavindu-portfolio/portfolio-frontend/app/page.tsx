@@ -56,6 +56,7 @@ const ORBIT = ["PHP", "React", "Kotlin", "Node", "MySQL", "Python"];
 const TYPED = ["reliable APIs.", "Jetpack Compose.", "WhatsApp automation.", "flood prediction.", "tidy databases."];
 const GREET = ["Hello!", "ආයුබෝවන්!", "வணக்கம்!", "Hi there!"];
 const SYM = ["</>", "{ }", "=>", ";", "01", "#", "()", "[]", "&&", "::"];
+const NAVD: [string, string][] = [["talent", "Talent"], ["services", "Services"], ["work", "Work"], ["path", "Experience"], ["hello", "Contact"]];
 const DOCK: [string, string, string][] = [
   ["top", "Home", "M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"],
   ["talent", "Skills", "M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"],
@@ -443,6 +444,7 @@ export default function Portfolio() {
   const [tlines, setTlines] = useState<string[]>(["KB-OS 2040 · online", "Type 'help' to see what I can do."]);
   const [tin, setTin] = useState("");
   const termRef = useRef<HTMLDivElement | null>(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
   const guideRef = useRef(true);
   const seen = useRef<Set<string>>(new Set());
   guideRef.current = guideOn;
@@ -653,6 +655,31 @@ export default function Portfolio() {
   const tilt = (e: React.PointerEvent<HTMLElement>) => { const el = e.currentTarget, r = el.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5; el.style.transform = `perspective(800px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) scale(1.02)`; };
   const glow = (e: React.PointerEvent<HTMLElement>) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--gx", `${e.clientX - r.left}px`); e.currentTarget.style.setProperty("--gy", `${e.clientY - r.top}px`); };
 
+  // sliding highlight under the desktop links, plus number keys 1-5 to jump around
+  const moveLens = (el: HTMLElement) => {
+    const n = navRef.current; if (!n) return;
+    n.style.setProperty("--lx", `${el.offsetLeft}px`); n.style.setProperty("--lw", `${el.offsetWidth}px`); n.style.setProperty("--lo", "1");
+    n.querySelectorAll("a").forEach((a) => a.classList.toggle("lit", a === el));
+  };
+  const resetLens = () => {
+    const n = navRef.current; if (!n) return;
+    const a = n.querySelector<HTMLElement>("a.on");
+    if (a) moveLens(a); else { n.style.setProperty("--lo", "0"); n.querySelectorAll("a").forEach((x) => x.classList.remove("lit")); }
+  };
+  useEffect(() => { resetLens(); }, [sec]); // eslint-disable-line
+  useEffect(() => {
+    const f = () => resetLens();
+    addEventListener("resize", f); addEventListener("load", f); document.fonts?.ready.then(f);
+    const k = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName) || t.isContentEditable || e.ctrlKey || e.metaKey || e.altKey) return;
+      const i = "12345".indexOf(e.key);
+      if (e.key.length === 1 && i >= 0) go(NAVD[i][0]);
+    };
+    addEventListener("keydown", k);
+    return () => { removeEventListener("resize", f); removeEventListener("load", f); removeEventListener("keydown", k); };
+  }, []); // eslint-disable-line
+
   const toggleGuide = () => {
     const v = !guideOn; setGuideOn(v);
     try { localStorage.setItem("guide", v ? "on" : "off"); } catch { /* ignore */ }
@@ -703,13 +730,24 @@ export default function Portfolio() {
 
       {/* desktop: floating bar with a guide switch and a call to action */}
       <nav className="pill" aria-label="Main">
-        <a className="logo" href="#top" aria-label="Kavindu Bogahawatte, back to the top"><span className="lk">KB</span><span className="nm">Kavindu Bogahawatte</span></a>
-        {[["talent", "Talent"], ["services", "Services"], ["work", "Work"], ["path", "Experience"], ["hello", "Contact"]].map(([id, l]) => <a key={id} href={`#${id}`} className={sec === id ? "on" : ""}>{l}</a>)}
+        <a className="logo" href="#top" aria-label="Kavindu Bogahawatte, back to the top">
+          <span className="lk">
+            <svg className="lring" viewBox="0 0 44 44" aria-hidden="true"><circle className="lt0" cx="22" cy="22" r="19" /><circle className="lt1" cx="22" cy="22" r="19" /></svg>
+            <b>KB</b>
+          </span>
+          <span className="nm">Kavindu Bogahawatte</span>
+        </a>
+        <div className="links2" ref={navRef} onPointerLeave={resetLens} title="Tip: press 1 to 5 to jump between sections">
+          <i className="lens" aria-hidden="true" />
+          {NAVD.map(([id, l], i) => (
+            <a key={id} href={`#${id}`} className={sec === id ? "on" : ""} onPointerEnter={(e) => moveLens(e.currentTarget)} onFocus={(e) => moveLens(e.currentTarget)} onBlur={resetLens}><em>{i + 1}</em>{l}</a>
+          ))}
+        </div>
         <button className={`gtog${guideOn ? " on" : ""}`} onClick={toggleGuide} aria-pressed={guideOn} aria-label={guideOn ? "Turn off the robot guide" : "Turn on the robot guide"} title={guideOn ? "Robot guide: on" : "Robot guide: off"}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M7 8h10a3 3 0 013 3v6a3 3 0 01-3 3H7a3 3 0 01-3-3v-6a3 3 0 013-3zM9 13h.01M15 13h.01M9 17h6" /></svg>
         </button>
-        <button className="kbd" onClick={() => setCmd(true)} aria-label="Open command menu">Ctrl K</button>
-        <a className="btn sm" href="#hello">Hire me</a>
+        <button className="kbd" onClick={() => setCmd(true)} aria-label="Open command menu"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5L21 21" /></svg><span>Ctrl K</span></button>
+        <a className="cta2" href="#hello">Hire me<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
         <i className="pprog" aria-hidden="true" />
       </nav>
 
